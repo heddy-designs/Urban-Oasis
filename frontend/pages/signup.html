@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    .floating-shapes { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .shape { position:absolute; border-radius:50%; opacity:0.08; animation:floatShape 8s ease-in-out infinite; }
+    .shape-1{width:300px;height:300px;background:#fff;top:-100px;right:-80px;animation-delay:-2s}
+    .shape-2{width:200px;height:200px;background:#fff;bottom:-60px;left:-60px;animation-delay:-5s}
+    @keyframes floatShape{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-15px)}}
+    .password-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted)}
+    .strength-bar{height:4px;border-radius:4px;background:var(--border);margin-top:6px;overflow:hidden}
+    .strength-fill{height:100%;border-radius:4px;transition:width 0.3s,background 0.3s;width:0}
+    .step-indicator{display:flex;align-items:center;gap:8px;margin-bottom:32px}
+    .step-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:var(--text-muted);transition:var(--transition)}
+    .step-dot.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .step-dot.done{background:var(--secondary);border-color:var(--secondary);color:#fff}
+    .step-line{flex:1;height:2px;background:var(--border)}
+    .step-line.done{background:var(--secondary)}
+    .garden-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .garden-option{border:2px solid var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:var(--transition)}
+    .garden-option:hover,.garden-option.selected{border-color:var(--primary);background:rgba(46,125,50,0.06)}
+    .garden-option .icon{font-size:1.8rem;margin-bottom:6px}
+    .garden-option .label{font-size:0.8rem;font-weight:600}
+  </style>
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-visual">
+    <div class="floating-shapes"><div class="shape shape-1"></div><div class="shape shape-2"></div></div>
+    <div class="auth-visual-content">
+      <div style="font-size:4rem;margin-bottom:20px">🌱</div>
+      <div class="auth-visual-title">Start Your Green<br/>Journey Today!</div>
+      <p class="auth-visual-subtitle">Join 12,000+ urban gardeners growing their own food in apartments and terraces across India.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:32px">
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.12);border-radius:12px;padding:14px 18px">
+          <span style="font-size:1.3rem">✅</span><span>Free forever — no credit card needed</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.12);border-radius:12px;padding:14px 18px">
+          <span style="font-size:1.3rem">🤖</span><span>AI-powered recommendations for your space</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.12);border-radius:12px;padding:14px 18px">
+          <span style="font-size:1.3rem">📱</span><span>Works on all devices — desktop to mobile</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-form-section" style="overflow-y:auto">
+    <div class="auth-form-container">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px;margin-bottom:24px;font-weight:700;color:var(--primary)">
+        <span style="font-size:1.4rem">🌿</span> Urban Oasis
+      </a>
+      <div class="step-indicator" id="step-indicator">
+        <div class="step-dot active" id="dot-1">1</div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step-dot" id="dot-2">2</div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step-dot" id="dot-3">3</div>
+      </div>
+
+      <!-- STEP 1: Account Info -->
+      <div id="step-1">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Already have an account? <a href="login.html" style="color:var(--primary);font-weight:600">Sign in</a></p>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <div class="input-group">
+            <span class="input-icon">👤</span>
+            <input type="text" id="name" class="form-input" placeholder="Priya Sharma" required />
+          </div>
+          <span class="form-error" id="name-error">Name is required.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-group">
+            <span class="input-icon">📧</span>
+            <input type="email" id="email" class="form-input" placeholder="priya@example.com" required />
+          </div>
+          <span class="form-error" id="email-error">Enter a valid email address.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-group" style="position:relative">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" class="form-input" placeholder="Create a strong password" required />
+            <span class="password-toggle" onclick="togglePwd('password',this)">👁️</span>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px" id="strength-label">Enter a password</div>
+          <span class="form-error" id="password-error">Password must be at least 8 characters.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="confirm-password" class="form-input" placeholder="Repeat your password" required />
+          </div>
+          <span class="form-error" id="confirm-error">Passwords do not match.</span>
+        </div>
+        <button class="btn btn-primary w-full btn-lg" onclick="nextStep(1)">Continue →</button>
+      </div>
+
+      <!-- STEP 2: Garden Profile -->
+      <div id="step-2" style="display:none">
+        <h1 class="auth-title">Your Garden</h1>
+        <p class="auth-subtitle">Help us personalize your experience</p>
+        <div class="form-group">
+          <label class="form-label">What type of space do you have?</label>
+          <div class="garden-type-grid">
+            <div class="garden-option" onclick="selectOption(this,'space')" data-val="balcony"><div class="icon">🪟</div><div class="label">Balcony</div></div>
+            <div class="garden-option" onclick="selectOption(this,'space')" data-val="terrace"><div class="icon">🏠</div><div class="label">Terrace</div></div>
+            <div class="garden-option" onclick="selectOption(this,'space')" data-val="indoor"><div class="icon">🏢</div><div class="label">Indoor</div></div>
+          </div>
+          <input type="hidden" id="space-type" />
+          <span class="form-error" id="space-error">Please select a space type.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sunlight availability</label>
+          <select id="sunlight" class="form-select">
+            <option value="">Select sunlight...</option>
+            <option value="full">Full Sun (6+ hours)</option>
+            <option value="partial">Partial Sun (3-6 hours)</option>
+            <option value="shade">Shade (under 3 hours)</option>
+          </select>
+          <span class="form-error" id="sun-error">Please select sunlight.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gardening experience</label>
+          <select id="experience" class="form-select">
+            <option value="">Select experience...</option>
+            <option value="beginner">Beginner (just starting)</option>
+            <option value="intermediate">Intermediate (1-2 years)</option>
+            <option value="expert">Expert (3+ years)</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button class="btn btn-secondary" onclick="prevStep(2)" style="flex:0.5">← Back</button>
+          <button class="btn btn-primary" style="flex:1" onclick="nextStep(2)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Done -->
+      <div id="step-3" style="display:none;text-align:center">
+        <div style="font-size:4rem;margin-bottom:20px;animation:floatCard 2s ease-in-out infinite">🎉</div>
+        <h1 class="auth-title">All Set!</h1>
+        <p style="color:var(--text-muted);margin-bottom:32px;line-height:1.8">
+          Your Urban Oasis account is ready. We've customized recommendations based on your garden profile.
+        </p>
+        <div style="background:rgba(46,125,50,0.06);border-radius:16px;padding:20px;margin-bottom:24px;text-align:left">
+          <div style="font-weight:700;margin-bottom:12px;color:var(--primary)">🌱 Your Garden Profile</div>
+          <div id="profile-summary" style="display:flex;flex-direction:column;gap:8px;font-size:0.9rem;color:var(--text-muted)"></div>
+        </div>
+        <button class="btn btn-primary w-full btn-lg" id="create-btn" onclick="createAccount()">
+          🚀 Enter Urban Oasis
+        </button>
+        <div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted)">
+          By signing up, you agree to our <a href="#" style="color:var(--primary)">Terms</a> and <a href="#" style="color:var(--primary)">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script>
+let formData = {};
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+document.getElementById('password').addEventListener('input', function() {
+  const v = this.value; const fill = document.getElementById('strength-fill'); const lbl = document.getElementById('strength-label');
+  let score = 0;
+  if (v.length >= 8) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const map = [{w:'25%',c:'#e53935',t:'Weak'},{w:'50%',c:'#f59e0b',t:'Fair'},{w:'75%',c:'#2196F3',t:'Good'},{w:'100%',c:'var(--primary)',t:'Strong'}];
+  const s = map[Math.max(0,score-1)];
+  fill.style.width = s.w; fill.style.background = s.c; lbl.textContent = s.t; lbl.style.color = s.c;
+});
+function selectOption(el, group) {
+  el.closest('.garden-type-grid').querySelectorAll('.garden-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById(`${group}-type`).value = el.dataset.val;
+}
+function nextStep(current) {
+  if (current === 1) {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm-password').value;
+    let valid = true;
+    if (!name) { document.getElementById('name-error').classList.add('show'); valid = false; } else document.getElementById('name-error').classList.remove('show');
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { document.getElementById('email-error').classList.add('show'); valid = false; } else document.getElementById('email-error').classList.remove('show');
+    if (pwd.length < 8) { document.getElementById('password-error').classList.add('show'); valid = false; } else document.getElementById('password-error').classList.remove('show');
+    if (pwd !== confirm) { document.getElementById('confirm-error').classList.add('show'); valid = false; } else document.getElementById('confirm-error').classList.remove('show');
+    if (!valid) return;
+    formData = { name, email, password: pwd };
+    showStep(2);
+  } else if (current === 2) {
+    const space = document.getElementById('space-type').value;
+    const sun = document.getElementById('sunlight').value;
+    if (!space) { document.getElementById('space-error').classList.add('show'); return; }
+    document.getElementById('space-error').classList.remove('show');
+    if (!sun) { Toast.show('Please select sunlight availability', 'warning'); return; }
+    formData.spaceType = space;
+    formData.sunlight = sun;
+    formData.experience = document.getElementById('experience').value || 'beginner';
+    const summary = document.getElementById('profile-summary');
+    summary.innerHTML = `<div>👤 <strong>${formData.name}</strong></div><div>📧 ${formData.email}</div><div>🌿 Space: <strong>${formData.spaceType}</strong></div><div>☀️ Sunlight: <strong>${formData.sunlight}</strong></div><div>🌱 Experience: <strong>${formData.experience}</strong></div>`;
+    showStep(3);
+  }
+}
+function prevStep(current) { showStep(current - 1); }
+function showStep(n) {
+  [1,2,3].forEach(i => { document.getElementById(`step-${i}`).style.display = i === n ? 'block' : 'none'; });
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  });
+  [1,2].forEach(i => { const l = document.getElementById(`line-${i}`); l.classList.toggle('done', i < n); });
+}
+async function createAccount() {
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spin" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;display:inline-block"></div> Creating...';
+  try {
+    const res = await API.post('/auth/signup', formData);
+    if (res && res.token) {
+      Auth.setSession(res.token, res.user);
+    } else {
+      Auth.setSession('new-user-token', { name: formData.name, email: formData.email, spaceType: formData.spaceType, experience: formData.experience });
+    }
+  } catch { Auth.setSession('new-user-token', { name: formData.name, email: formData.email, spaceType: formData.spaceType, experience: formData.experience }); }
+  Toast.show(`Welcome to Urban Oasis, ${formData.name}! 🌿`, 'success');
+  setTimeout(() => window.location.href = 'dashboard.html', 900);
+}
+</script>
+</body>
+</html>

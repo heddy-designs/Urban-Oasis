@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plant Library – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+    .filter-chip{padding:6px 16px;border-radius:50px;border:2px solid var(--border);font-size:0.85rem;font-weight:600;cursor:pointer;transition:var(--transition);background:var(--bg-card)}
+    .filter-chip:hover,.filter-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .plant-detail-modal .modal{max-width:720px;max-height:90vh;overflow-y:auto}
+    .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+    .detail-item{background:rgba(46,125,50,0.05);border-radius:10px;padding:12px;text-align:center}
+    .detail-item .di-val{font-weight:700;font-size:0.95rem}
+    .detail-item .di-lbl{font-size:0.75rem;color:var(--text-muted);margin-top:2px}
+    .disease-tag{display:inline-block;padding:4px 10px;background:rgba(229,57,53,0.1);color:#e53935;border-radius:50px;font-size:0.75rem;font-weight:600;margin:3px}
+    .problem-tag{display:inline-block;padding:4px 10px;background:rgba(255,152,0,0.1);color:#FF9800;border-radius:50px;font-size:0.75rem;font-weight:600;margin:3px}
+    .benefit-tag{display:inline-block;padding:4px 10px;background:rgba(46,125,50,0.1);color:var(--primary);border-radius:50px;font-size:0.75rem;font-weight:600;margin:3px}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <!-- Search & Filters -->
+    <div class="card" style="margin-bottom:20px;padding:20px">
+      <div class="search-bar" style="margin-bottom:16px">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="plant-search" class="form-input" placeholder="Search plants by name, category..." style="padding-left:48px;border-radius:50px"/>
+        <span class="search-clear" id="search-clear">✕</span>
+      </div>
+      <div class="filter-bar">
+        <span style="font-size:0.85rem;font-weight:600;color:var(--text-muted)">Filter:</span>
+        <div class="filter-chip active" onclick="filterPlants('all',this)">All Plants</div>
+        <div class="filter-chip" onclick="filterPlants('Vegetable',this)">🥦 Vegetables</div>
+        <div class="filter-chip" onclick="filterPlants('Herb',this)">🌿 Herbs</div>
+        <div class="filter-chip" onclick="filterPlants('Medicinal',this)">💊 Medicinal</div>
+        <div class="filter-chip" onclick="filterPlants('Indoor',this)">🏠 Indoor</div>
+        <div class="filter-chip" onclick="filterPlants('Beginner',this)">🌱 Beginner</div>
+      </div>
+    </div>
+
+    <!-- Results count -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:0.9rem;color:var(--text-muted)"><span id="plant-count">8</span> plants found</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="setView('grid')" id="grid-btn">⊞ Grid</button>
+        <button class="btn btn-ghost btn-sm" onclick="setView('list')" id="list-btn">☰ List</button>
+      </div>
+    </div>
+
+    <!-- Plant Grid -->
+    <div id="plant-grid" class="grid-3" style="gap:20px"></div>
+    <div id="plant-list" style="display:none;display:flex;flex-direction:column;gap:12px"></div>
+    <div id="empty-state" class="empty-state" style="display:none">
+      <div style="font-size:3rem;margin-bottom:12px">🔍</div>
+      <div style="font-size:1.1rem;font-weight:600;margin-bottom:8px">No plants found</div>
+      <div>Try a different search term or filter</div>
+    </div>
+  </main>
+</div>
+
+<!-- Plant Detail Modal -->
+<div class="modal-overlay" id="plant-modal">
+  <div class="modal" style="max-width:720px;max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="modal-emoji" style="font-size:2.5rem"></span>
+        <div>
+          <div class="modal-title" id="modal-name">Plant Name</div>
+          <div id="modal-category" style="font-size:0.85rem;color:var(--text-muted)"></div>
+        </div>
+      </div>
+      <div class="modal-close" data-close-modal="plant-modal" onclick="closeModal('plant-modal')">✕</div>
+    </div>
+    <p id="modal-desc" style="color:var(--text-muted);line-height:1.8;margin-bottom:20px"></p>
+    <div class="detail-grid" id="modal-details"></div>
+    <div style="margin-bottom:16px"><div style="font-weight:700;margin-bottom:8px">🌿 Medicinal Benefits</div><div id="modal-medicinal"></div></div>
+    <div style="margin-bottom:16px"><div style="font-weight:700;margin-bottom:8px">⚠️ Common Diseases</div><div id="modal-diseases"></div></div>
+    <div style="margin-bottom:16px"><div style="font-weight:700;margin-bottom:8px">🔧 Common Problems</div><div id="modal-problems"></div></div>
+    <div style="background:rgba(46,125,50,0.05);border-radius:12px;padding:16px">
+      <div style="font-weight:700;margin-bottom:8px">📋 Care Instructions</div>
+      <p id="modal-care" style="font-size:0.92rem;color:var(--text-muted);line-height:1.7"></p>
+    </div>
+    <button class="btn btn-primary w-full" style="margin-top:20px" onclick="closeModal('plant-modal')">Got it! 🌱</button>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('plant-library.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Plant Library','Browse 250+ plants for your urban garden');
+
+let currentFilter = 'all', currentView = 'grid', searchQuery = '';
+
+function renderPlants(plants) {
+  document.getElementById('plant-count').textContent = plants.length;
+  if (!plants.length) {
+    document.getElementById('plant-grid').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('plant-grid').style.display = currentView === 'grid' ? 'grid' : 'none';
+  document.getElementById('plant-list').style.display = currentView === 'list' ? 'flex' : 'none';
+
+  const gridHTML = plants.map((p,i) => `
+    <div class="card plant-card animate-on-scroll" style="animation-delay:${i*0.05}s;cursor:pointer" onclick="showPlant(${p.id})">
+      <div style="height:130px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(46,125,50,0.08),rgba(102,187,106,0.05));border-radius:12px;margin-bottom:14px;font-size:4rem">${p.emoji}</div>
+      <div style="font-weight:700;font-size:1rem;margin-bottom:6px">${p.name}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="badge badge-green">${p.category}</span>
+        <span class="badge ${p.difficulty==='Beginner'?'badge-green':p.difficulty==='Intermediate'?'badge-yellow':'badge-red'}">${p.difficulty}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.78rem;color:var(--text-muted)">
+        <span>💧 ${p.water}</span><span>🌡️ ${p.temp}</span>
+        <span>☀️ ${p.light}</span><span>🌾 ${p.harvest}</span>
+      </div>
+    </div>`).join('');
+
+  const listHTML = plants.map(p => `
+    <div class="card" style="padding:16px;cursor:pointer;display:flex;align-items:center;gap:16px" onclick="showPlant(${p.id})">
+      <div style="font-size:3rem;flex-shrink:0">${p.emoji}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:1rem">${p.name}</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin:4px 0">${p.desc.substring(0,100)}...</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge badge-green">${p.category}</span>
+          <span class="badge badge-gray">💧 ${p.water}</span>
+          <span class="badge badge-gray">🌾 ${p.harvest}</span>
+        </div>
+      </div>
+      <div style="flex-shrink:0;font-size:1.2rem;color:var(--text-muted)">›</div>
+    </div>`).join('');
+
+  document.getElementById('plant-grid').innerHTML = gridHTML;
+  document.getElementById('plant-list').innerHTML = listHTML;
+}
+
+function getFilteredPlants() {
+  let plants = PLANT_LIBRARY;
+  if (currentFilter !== 'all') {
+    plants = plants.filter(p => p.category === currentFilter || p.difficulty === currentFilter);
+  }
+  if (searchQuery) {
+    plants = plants.filter(p => p.name.toLowerCase().includes(searchQuery) || p.category.toLowerCase().includes(searchQuery) || p.desc.toLowerCase().includes(searchQuery));
+  }
+  return plants;
+}
+
+function filterPlants(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderPlants(getFilteredPlants());
+}
+
+function setView(view) {
+  currentView = view;
+  document.getElementById('grid-btn').classList.toggle('active', view==='grid');
+  document.getElementById('list-btn').classList.toggle('active', view==='list');
+  renderPlants(getFilteredPlants());
+}
+
+function showPlant(id) {
+  const p = PLANT_LIBRARY.find(p=>p.id===id);
+  if(!p) return;
+  document.getElementById('modal-emoji').textContent = p.emoji;
+  document.getElementById('modal-name').textContent = p.name;
+  document.getElementById('modal-category').textContent = `${p.category} • ${p.difficulty}`;
+  document.getElementById('modal-desc').textContent = p.desc;
+  document.getElementById('modal-details').innerHTML = [
+    {lbl:'💧 Water',val:p.water},{lbl:'🌡️ Temperature',val:p.temp},{lbl:'💧 Humidity',val:p.humidity},
+    {lbl:'☀️ Light',val:p.light},{lbl:'🌾 Harvest',val:p.harvest},{lbl:'💊 Fertilizer',val:p.fertilizer}
+  ].map(d=>`<div class="detail-item"><div class="di-val">${d.val}</div><div class="di-lbl">${d.lbl}</div></div>`).join('');
+  document.getElementById('modal-medicinal').innerHTML = p.medicinal.map(m=>`<span class="benefit-tag">✅ ${m}</span>`).join('');
+  document.getElementById('modal-diseases').innerHTML = p.diseases.map(d=>`<span class="disease-tag">⚠️ ${d}</span>`).join('');
+  document.getElementById('modal-problems').innerHTML = p.problems.map(pr=>`<span class="problem-tag">🔧 ${pr}</span>`).join('');
+  document.getElementById('modal-care').textContent = p.care;
+  openModal('plant-modal');
+}
+
+initSearch('plant-search','search-clear',(q) => { searchQuery = q; renderPlants(getFilteredPlants()); });
+renderPlants(PLANT_LIBRARY);
+</script>
+</body>
+</html>

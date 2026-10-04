@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plant Care Calendar – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .cal-layout{display:grid;grid-template-columns:1fr 340px;gap:20px}
+    @media(max-width:900px){.cal-layout{grid-template-columns:1fr}}
+    .task-badge{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+    .cal-task-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:6px;font-size:0.85rem;cursor:pointer;transition:var(--transition)}
+    .cal-task-row:hover{background:rgba(46,125,50,0.06)}
+    .cal-task-row.done{opacity:0.5}
+    .task-type-water{background:rgba(33,150,243,0.08);border-left:3px solid #2196F3}
+    .task-type-fertilize{background:rgba(46,125,50,0.08);border-left:3px solid var(--primary)}
+    .task-type-prune{background:rgba(255,152,0,0.08);border-left:3px solid #FF9800}
+    .task-type-repot{background:rgba(156,39,176,0.08);border-left:3px solid #9C27B0}
+    .task-type-harvest{background:rgba(76,175,80,0.08);border-left:3px solid #4CAF50}
+    .legend-item{display:flex;align-items:center;gap:8px;font-size:0.82rem}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="switchView('month')">📅 Monthly</button>
+      <button class="btn btn-primary btn-sm" onclick="switchView('week')">📋 Weekly</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateSchedule()">⚡ Auto-Generate</button>
+    </div>
+
+    <div class="cal-layout">
+      <!-- CALENDAR -->
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <button onclick="prevMonth()" class="btn btn-ghost btn-sm">‹</button>
+            <div>
+              <div style="font-weight:700;font-size:1.1rem;text-align:center" id="cal-month-year"></div>
+            </div>
+            <button onclick="nextMonth()" class="btn btn-ghost btn-sm">›</button>
+          </div>
+          <div class="calendar-grid" id="cal-grid">
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+          </div>
+        </div>
+
+        <!-- Selected Day Tasks -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-weight:700" id="selected-day-title">Today's Tasks</div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('add-task-modal')">+ Add Task</button>
+          </div>
+          <div id="day-tasks"></div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR PANEL -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Weekly Summary -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">📋 This Week's Schedule</div>
+          <div id="weekly-schedule"></div>
+        </div>
+
+        <!-- Legend -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:12px">🗂️ Task Types</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="legend-item"><span style="width:12px;height:12px;border-radius:3px;background:#2196F3;display:inline-block"></span>💧 Watering</div>
+            <div class="legend-item"><span style="width:12px;height:12px;border-radius:3px;background:var(--primary);display:inline-block"></span>🌱 Fertilizing</div>
+            <div class="legend-item"><span style="width:12px;height:12px;border-radius:3px;background:#FF9800;display:inline-block"></span>✂️ Pruning</div>
+            <div class="legend-item"><span style="width:12px;height:12px;border-radius:3px;background:#9C27B0;display:inline-block"></span>🪴 Repotting</div>
+            <div class="legend-item"><span style="width:12px;height:12px;border-radius:3px;background:#4CAF50;display:inline-block"></span>🌾 Harvesting</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">📊 Monthly Stats</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:0.88rem">Total Tasks</span><span style="font-weight:700;color:var(--primary)" id="stat-total">0</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:0.88rem">Completed</span><span style="font-weight:700;color:var(--primary)" id="stat-done">0</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:0.88rem">Completion Rate</span><span style="font-weight:700;color:var(--primary)" id="stat-rate">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="stat-progress" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- Upcoming -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">🔔 Upcoming Reminders</div>
+          <div id="upcoming-reminders" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal-overlay" id="add-task-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Care Task</div>
+      <div class="modal-close" onclick="closeModal('add-task-modal')">✕</div>
+    </div>
+    <div class="form-group"><label class="form-label">Plant</label>
+      <select id="task-plant" class="form-select">
+        <option>🍅 Cherry Tomato</option><option>🌿 Basil</option><option>🌶️ Chilli Pepper</option>
+        <option>🥬 Spinach</option><option>🌱 Mint</option><option>🪴 Aloe Vera</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Task Type</label>
+      <select id="task-type" class="form-select">
+        <option value="water">💧 Watering</option><option value="fertilize">🌱 Fertilizing</option>
+        <option value="prune">✂️ Pruning</option><option value="repot">🪴 Repotting</option>
+        <option value="harvest">🌾 Harvesting</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Date</label><input type="date" id="task-date" class="form-input"/></div>
+    <div class="form-group"><label class="form-label">Time</label><input type="time" id="task-time" class="form-input" value="07:00"/></div>
+    <div class="form-group"><label class="form-label">Note (optional)</label><textarea id="task-note" class="form-textarea" placeholder="Any specific notes..." style="min-height:70px"></textarea></div>
+    <button class="btn btn-primary w-full" onclick="addTask()">Add Task ✓</button>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('calendar.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Plant Care Calendar','Track and schedule all your plant care tasks');
+
+let currentDate = new Date();
+let selectedDay = new Date();
+let allTasks = Store.get('cal-tasks') || generateDefaultTasks();
+
+function generateDefaultTasks() {
+  const now = new Date();
+  const tasks = [];
+  const plants = ['🍅 Tomato','🌿 Basil','🌶️ Chilli','🥬 Spinach','🌱 Mint'];
+  const types = ['water','water','fertilize','prune','harvest'];
+  const typeIcons = {water:'💧',fertilize:'🌱',prune:'✂️',repot:'🪴',harvest:'🌾'};
+
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(now); d.setDate(now.getDate() + i - 5);
+    if (i % 2 === 0) tasks.push({id:Date.now()+i, plant:plants[i%plants.length], type:'water', date:d.toISOString().split('T')[0], time:'07:00', done:i<5});
+    if (i % 5 === 0) tasks.push({id:Date.now()+i+1000, plant:plants[i%plants.length], type:'fertilize', date:d.toISOString().split('T')[0], time:'09:00', done:i<5});
+    if (i % 10 === 0) tasks.push({id:Date.now()+i+2000, plant:plants[i%plants.length], type:'harvest', date:d.toISOString().split('T')[0], time:'17:00', done:false});
+  }
+  return tasks;
+}
+
+const typeIcons = {water:'💧',fertilize:'🌱',prune:'✂️',repot:'🪴',harvest:'🌾'};
+const typeLabels = {water:'Water',fertilize:'Fertilize',prune:'Prune',repot:'Repot',harvest:'Harvest'};
+
+function renderCalendar() {
+  const y = currentDate.getFullYear(), m = currentDate.getMonth();
+  document.getElementById('cal-month-year').textContent = currentDate.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  const grid = document.getElementById('cal-grid');
+  // Keep headers
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+
+  // Prev month overflow
+  for (let i = firstDay-1; i >= 0; i--) {
+    const d = document.createElement('div');
+    d.className = 'calendar-day other-month';
+    d.textContent = prevDays - i;
+    grid.appendChild(d);
+  }
+
+  const today = new Date();
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = document.createElement('div');
+    d.className = 'calendar-day';
+    d.textContent = day;
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const hasTasks = allTasks.some(t=>t.date===dateStr);
+    if (hasTasks) d.classList.add('has-task');
+    if (y===today.getFullYear()&&m===today.getMonth()&&day===today.getDate()) d.classList.add('today');
+    if (y===selectedDay.getFullYear()&&m===selectedDay.getMonth()&&day===selectedDay.getDate()) d.style.outline='2px solid var(--primary)';
+    d.onclick = () => { selectedDay = new Date(y,m,day); renderDayTasks(); renderCalendar(); };
+    grid.appendChild(d);
+  }
+  renderStats();
+  renderWeeklySchedule();
+  renderUpcoming();
+}
+
+function renderDayTasks() {
+  const dateStr = selectedDay.toISOString().split('T')[0];
+  const tasks = allTasks.filter(t=>t.date===dateStr);
+  document.getElementById('selected-day-title').textContent = selectedDay.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  if (!tasks.length) {
+    document.getElementById('day-tasks').innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted)">🌿 No tasks scheduled<br><small>Click "+ Add Task" to add one</small></div>';
+    return;
+  }
+  document.getElementById('day-tasks').innerHTML = tasks.map(t=>`
+    <div class="cal-task-row task-type-${t.type} ${t.done?'done':''}" onclick="toggleTask('${t.id}')">
+      <div style="font-size:1.1rem">${typeIcons[t.type]}</div>
+      <div style="flex:1">
+        <div style="font-weight:600">${typeLabels[t.type]} – ${t.plant}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">⏰ ${t.time}${t.note?` • ${t.note}`:''}</div>
+      </div>
+      <div style="font-size:1rem">${t.done?'✅':'⭕'}</div>
+    </div>`).join('');
+}
+
+function toggleTask(id) {
+  const t = allTasks.find(t=>String(t.id)===String(id));
+  if(t) { t.done=!t.done; Store.set('cal-tasks',allTasks); renderDayTasks(); renderStats(); Toast.show(t.done?`✅ ${typeLabels[t.type]} completed!`:`Marked pending`,'success'); }
+}
+
+function addTask() {
+  const task = {
+    id: Date.now(),
+    plant: document.getElementById('task-plant').value,
+    type: document.getElementById('task-type').value,
+    date: document.getElementById('task-date').value || new Date().toISOString().split('T')[0],
+    time: document.getElementById('task-time').value,
+    note: document.getElementById('task-note').value,
+    done: false
+  };
+  allTasks.push(task);
+  Store.set('cal-tasks', allTasks);
+  closeModal('add-task-modal');
+  renderCalendar(); renderDayTasks();
+  Toast.show('Task added successfully! 📅', 'success');
+}
+
+function renderStats() {
+  const monthTasks = allTasks.filter(t=>{ const d=new Date(t.date); return d.getMonth()===currentDate.getMonth()&&d.getFullYear()===currentDate.getFullYear(); });
+  const done = monthTasks.filter(t=>t.done).length;
+  const rate = monthTasks.length ? Math.round(done/monthTasks.length*100) : 0;
+  document.getElementById('stat-total').textContent = monthTasks.length;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-rate').textContent = rate+'%';
+  document.getElementById('stat-progress').style.width = rate+'%';
+}
+
+function renderWeeklySchedule() {
+  const today = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = '';
+  for (let i=0;i<7;i++) {
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const dateStr=d.toISOString().split('T')[0];
+    const tasks=allTasks.filter(t=>t.date===dateStr);
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:36px;text-align:center"><div style="font-size:0.7rem;color:var(--text-muted)">${days[d.getDay()]}</div><div style="font-weight:700;font-size:0.9rem">${d.getDate()}</div></div>
+      <div style="flex:1;font-size:0.8rem;color:var(--text-muted)">${tasks.length?tasks.slice(0,2).map(t=>`${typeIcons[t.type]} ${t.plant.split(' ').pop()}`).join(', ')+(tasks.length>2?` +${tasks.length-2}`:''):'No tasks'}</div>
+      <span class="badge ${tasks.length?'badge-green':'badge-gray'}" style="font-size:0.7rem">${tasks.length}</span>
+    </div>`;
+  }
+  document.getElementById('weekly-schedule').innerHTML = html;
+}
+
+function renderUpcoming() {
+  const upcoming = allTasks.filter(t=>!t.done&&new Date(t.date)>=new Date()).slice(0,4);
+  document.getElementById('upcoming-reminders').innerHTML = upcoming.map(t=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:rgba(46,125,50,0.04);border:1px solid var(--border)">
+      <span style="font-size:1.2rem">${typeIcons[t.type]}</span>
+      <div style="flex:1"><div style="font-weight:600;font-size:0.85rem">${typeLabels[t.type]} – ${t.plant}</div>
+      <div style="font-size:0.75rem;color:var(--text-muted)">${new Date(t.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})} at ${t.time}</div></div>
+    </div>`).join('');
+}
+
+function generateSchedule() {
+  allTasks = generateDefaultTasks();
+  Store.set('cal-tasks', allTasks);
+  renderCalendar(); renderDayTasks();
+  Toast.show('Schedule auto-generated! ⚡', 'success');
+}
+
+function prevMonth() { currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); }
+function nextMonth() { currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); }
+
+document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
+renderCalendar();
+renderDayTasks();
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .settings-layout{display:grid;grid-template-columns:220px 1fr;gap:20px}
+    @media(max-width:768px){.settings-layout{grid-template-columns:1fr}}
+    .settings-nav-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:0.9rem;font-weight:500;color:var(--text-muted);transition:var(--transition)}
+    .settings-nav-item:hover,.settings-nav-item.active{background:rgba(46,125,50,0.1);color:var(--primary);font-weight:600}
+    .settings-section{display:none}
+    .settings-section.active{display:block;animation:fadeIn 0.3s ease}
+    .toggle-switch{position:relative;width:48px;height:26px;cursor:pointer}
+    .toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+    .toggle-track{position:absolute;inset:0;background:var(--border);border-radius:13px;transition:0.3s}
+    .toggle-thumb{position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+    .toggle-switch input:checked~.toggle-track{background:var(--primary)}
+    .toggle-switch input:checked~.toggle-thumb{transform:translateX(22px)}
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+    .setting-row:last-child{border-bottom:none}
+    .setting-info{flex:1}
+    .setting-title{font-weight:600;font-size:0.92rem}
+    .setting-desc{font-size:0.8rem;color:var(--text-muted);margin-top:2px}
+    .avatar-ring{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;color:#fff;cursor:pointer;transition:var(--transition);position:relative;margin:0 auto 16px}
+    .avatar-ring:hover::after{content:'📷';position:absolute;inset:0;background:rgba(0,0,0,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem}
+    .lang-option{border:2px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:var(--transition)}
+    .lang-option:hover,.lang-option.selected{border-color:var(--primary);background:rgba(46,125,50,0.06)}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <div class="settings-layout">
+      <!-- Nav -->
+      <div class="card" style="height:fit-content;padding:12px">
+        <div class="settings-nav-item active" onclick="showTab('profile',this)"><span>👤</span>Profile</div>
+        <div class="settings-nav-item" onclick="showTab('theme',this)"><span>🎨</span>Theme</div>
+        <div class="settings-nav-item" onclick="showTab('notifications',this)"><span>🔔</span>Notifications</div>
+        <div class="settings-nav-item" onclick="showTab('garden',this)"><span>🌿</span>Garden Settings</div>
+        <div class="settings-nav-item" onclick="showTab('language',this)"><span>🌐</span>Language</div>
+        <div class="settings-nav-item" onclick="showTab('privacy',this)"><span>🔒</span>Privacy</div>
+        <hr style="border-color:var(--border);margin:8px 0"/>
+        <div class="settings-nav-item" style="color:#e53935" onclick="Auth.logout()"><span>🚪</span>Sign Out</div>
+      </div>
+
+      <!-- Content -->
+      <div>
+        <!-- PROFILE -->
+        <div class="settings-section active" id="tab-profile">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:20px">👤 Profile Settings</h3>
+            <div class="avatar-ring" id="avatar-ring" title="Click to change photo">U</div>
+            <input type="file" id="avatar-file" accept="image/*" style="display:none"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="prof-name" class="form-input" placeholder="Your name"/></div>
+              <div class="form-group"><label class="form-label">Email</label><input type="email" id="prof-email" class="form-input" placeholder="your@email.com"/></div>
+              <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="prof-phone" class="form-input" placeholder="+91 98765 43210"/></div>
+              <div class="form-group"><label class="form-label">City</label><input type="text" id="prof-city" class="form-input" placeholder="Bangalore"/></div>
+            </div>
+            <div class="form-group"><label class="form-label">Bio</label><textarea id="prof-bio" class="form-textarea" style="min-height:70px" placeholder="Tell us about your gardening journey..."></textarea></div>
+            <button class="btn btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h3 style="font-weight:700;margin-bottom:16px">🔒 Change Password</h3>
+            <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="curr-pwd" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">New Password</label><input type="password" id="new-pwd" class="form-input"/></div>
+            <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" id="conf-pwd" class="form-input"/></div>
+            <button class="btn btn-secondary" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+
+        <!-- THEME -->
+        <div class="settings-section" id="tab-theme">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:20px">🎨 Theme & Appearance</h3>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-title">Dark Mode</div><div class="setting-desc">Switch between light and dark theme</div></div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="dark-mode-toggle" onchange="ThemeManager.set(this.checked?'dark':'light');updateToggles()"/>
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div style="margin-top:20px"><div style="font-weight:600;margin-bottom:12px">Color Accent</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <div style="width:40px;height:40px;border-radius:50%;background:#2E7D32;cursor:pointer;border:3px solid var(--primary)" title="Forest Green" onclick="setAccent('#2E7D32')"></div>
+                <div style="width:40px;height:40px;border-radius:50%;background:#1565C0;cursor:pointer;border:3px solid transparent" title="Ocean Blue" onclick="setAccent('#1565C0')"></div>
+                <div style="width:40px;height:40px;border-radius:50%;background:#6A1B9A;cursor:pointer;border:3px solid transparent" title="Royal Purple" onclick="setAccent('#6A1B9A')"></div>
+                <div style="width:40px;height:40px;border-radius:50%;background:#BF360C;cursor:pointer;border:3px solid transparent" title="Autumn Red" onclick="setAccent('#BF360C')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="settings-section" id="tab-notifications">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:20px">🔔 Notification Preferences</h3>
+            <div id="notif-settings"></div>
+          </div>
+        </div>
+
+        <!-- GARDEN SETTINGS -->
+        <div class="settings-section" id="tab-garden">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:20px">🌿 Garden Preferences</h3>
+            <div class="form-group"><label class="form-label">Space Type</label>
+              <select id="garden-space" class="form-select">
+                <option value="balcony">🪟 Balcony</option><option value="terrace">🏠 Terrace</option>
+                <option value="indoor">🏢 Indoor</option><option value="garden">🌳 Garden</option>
+              </select>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group"><label class="form-label">Width (ft)</label><input type="number" id="garden-w" class="form-input" value="8"/></div>
+              <div class="form-group"><label class="form-label">Length (ft)</label><input type="number" id="garden-l" class="form-input" value="10"/></div>
+            </div>
+            <div class="form-group"><label class="form-label">Experience Level</label>
+              <select id="garden-exp" class="form-select">
+                <option>Beginner</option><option>Intermediate</option><option>Expert</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Climate Zone</label>
+              <select id="climate" class="form-select">
+                <option>Tropical (South India)</option><option>Semi-arid (Deccan Plateau)</option>
+                <option>Subtropical (North India)</option><option>Coastal</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="saveGardenSettings()">💾 Save Garden Settings</button>
+          </div>
+        </div>
+
+        <!-- LANGUAGE -->
+        <div class="settings-section" id="tab-language">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:20px">🌐 Language & Region</h3>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px" id="lang-grid"></div>
+          </div>
+        </div>
+
+        <!-- PRIVACY -->
+        <div class="settings-section" id="tab-privacy">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:20px">🔒 Privacy & Security</h3>
+            <div id="privacy-settings"></div>
+            <div style="margin-top:24px;padding:16px;background:rgba(229,57,53,0.06);border-radius:12px;border:1px solid rgba(229,57,53,0.15)">
+              <div style="font-weight:700;color:#e53935;margin-bottom:8px">⚠️ Danger Zone</div>
+              <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:12px">Deleting your account is permanent and cannot be undone.</p>
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure? This cannot be undone.')) Toast.show('Account deletion request submitted','info')">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('settings.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Settings','Manage your account and preferences');
+
+function showTab(tab, el) {
+  document.querySelectorAll('.settings-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.settings-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  el.classList.add('active');
+}
+
+// Load user data
+const user = Auth.getUser() || {};
+if(document.getElementById('prof-name')) document.getElementById('prof-name').value = user.name || '';
+if(document.getElementById('prof-email')) document.getElementById('prof-email').value = user.email || '';
+const initials = (user.name||'U').charAt(0).toUpperCase();
+document.getElementById('avatar-ring').textContent = initials;
+
+function updateToggles() {
+  document.getElementById('dark-mode-toggle').checked = ThemeManager.get() === 'dark';
+}
+updateToggles();
+
+function saveProfile() {
+  const name = document.getElementById('prof-name').value.trim();
+  const email = document.getElementById('prof-email').value.trim();
+  if(!name||!email){Toast.show('Fill required fields','warning');return;}
+  const u = Auth.getUser()||{};
+  Auth.setSession(Auth.getToken()||'token', {...u,name,email,phone:document.getElementById('prof-phone').value,city:document.getElementById('prof-city').value,bio:document.getElementById('prof-bio').value});
+  document.getElementById('avatar-ring').textContent = name.charAt(0).toUpperCase();
+  Toast.show('Profile saved! 👤','success');
+}
+
+function changePassword() {
+  const cur=document.getElementById('curr-pwd').value;
+  const nw=document.getElementById('new-pwd').value;
+  const conf=document.getElementById('conf-pwd').value;
+  if(!cur||!nw||!conf){Toast.show('Fill all password fields','warning');return;}
+  if(nw!==conf){Toast.show('New passwords don\'t match','error');return;}
+  if(nw.length<8){Toast.show('Password must be at least 8 characters','warning');return;}
+  Toast.show('Password updated! 🔒','success');
+  document.getElementById('curr-pwd').value='';document.getElementById('new-pwd').value='';document.getElementById('conf-pwd').value='';
+}
+
+// Notification settings
+const NOTIF_SETTINGS = [
+  {id:'watering',label:'Watering Reminders',desc:'Get notified when it\'s time to water your plants',default:true},
+  {id:'fertilizer',label:'Fertilizer Alerts',desc:'Notifications for scheduled fertilizing',default:true},
+  {id:'harvest',label:'Harvest Reminders',desc:'Know when your plants are ready to harvest',default:true},
+  {id:'weather',label:'Weather Alerts',desc:'Get notified about extreme weather affecting your garden',default:false},
+  {id:'community',label:'Community Activity',desc:'Likes and comments on your posts',default:false},
+  {id:'tips',label:'Daily Gardening Tips',desc:'Receive a daily gardening tip',default:true},
+];
+
+document.getElementById('notif-settings').innerHTML = NOTIF_SETTINGS.map(n=>`
+  <div class="setting-row">
+    <div class="setting-info"><div class="setting-title">${n.label}</div><div class="setting-desc">${n.desc}</div></div>
+    <label class="toggle-switch">
+      <input type="checkbox" ${n.default?'checked':''} onchange="Toast.show('Preference saved','success')"/>
+      <div class="toggle-track"></div><div class="toggle-thumb"></div>
+    </label>
+  </div>`).join('');
+
+const LANGUAGES = [
+  {code:'en',name:'English',flag:'🇬🇧'},
+  {code:'hi',name:'Hindi',flag:'🇮🇳'},
+  {code:'te',name:'Telugu',flag:'🇮🇳'},
+  {code:'ta',name:'Tamil',flag:'🇮🇳'},
+  {code:'kn',name:'Kannada',flag:'🇮🇳'},
+  {code:'mr',name:'Marathi',flag:'🇮🇳'},
+];
+document.getElementById('lang-grid').innerHTML = LANGUAGES.map(l=>`
+  <div class="lang-option ${l.code==='en'?'selected':''}" onclick="selectLang(this,'${l.code}')">
+    <div style="font-size:1.8rem;margin-bottom:6px">${l.flag}</div>
+    <div style="font-weight:600;font-size:0.88rem">${l.name}</div>
+  </div>`).join('');
+
+function selectLang(el, code) {
+  document.querySelectorAll('.lang-option').forEach(l=>l.classList.remove('selected'));
+  el.classList.add('selected');
+  Toast.show(`Language: ${el.querySelector('div:last-child').textContent} selected`,'success');
+}
+
+const PRIVACY_SETTINGS = [
+  {label:'Public Profile',desc:'Allow other gardeners to find your profile',default:true},
+  {label:'Show Garden Photos',desc:'Display your garden photos in community feed',default:true},
+  {label:'Analytics Sharing',desc:'Help improve Urban Oasis with anonymous usage data',default:false},
+];
+document.getElementById('privacy-settings').innerHTML = PRIVACY_SETTINGS.map(p=>`
+  <div class="setting-row">
+    <div class="setting-info"><div class="setting-title">${p.label}</div><div class="setting-desc">${p.desc}</div></div>
+    <label class="toggle-switch">
+      <input type="checkbox" ${p.default?'checked':''} onchange="Toast.show('Setting updated','success')"/>
+      <div class="toggle-track"></div><div class="toggle-thumb"></div>
+    </label>
+  </div>`).join('');
+
+function saveGardenSettings() {
+  const settings = {
+    spaceType: document.getElementById('garden-space').value,
+    width: document.getElementById('garden-w').value,
+    length: document.getElementById('garden-l').value,
+    experience: document.getElementById('garden-exp').value,
+    climate: document.getElementById('climate').value,
+  };
+  Store.set('garden-settings', settings);
+  Toast.show('Garden settings saved! 🌿','success');
+}
+
+function setAccent(color) { Toast.show('Accent color updated!','success'); }
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Balcony Space Planner – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .planner-layout{display:grid;grid-template-columns:340px 1fr;gap:20px}
+    @media(max-width:900px){.planner-layout{grid-template-columns:1fr}}
+    .garden-grid{border:2px solid var(--border);border-radius:16px;padding:20px;aspect-ratio:1;max-width:600px;max-height:600px;margin:0 auto;display:grid;gap:4px;background:rgba(139,195,74,0.04)}
+    .garden-cell{border-radius:6px;border:1px dashed rgba(46,125,50,0.25);background:rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;transition:var(--transition)}
+    .garden-cell:hover{background:rgba(46,125,50,0.1);transform:scale(1.05)}
+    .garden-cell.plant{background:rgba(46,125,50,0.15);border:1px solid var(--primary);cursor:pointer}
+    .garden-cell.path{background:rgba(189,189,189,0.3);border:1px solid #ccc;cursor:default}
+    .plant-palette{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .palette-item{padding:10px;border-radius:10px;border:2px solid var(--border);text-align:center;cursor:pointer;transition:var(--transition);font-size:1.8rem}
+    .palette-item:hover,.palette-item.selected{border-color:var(--primary);background:rgba(46,125,50,0.06)}
+    .slider-container{display:flex;align-items:center;gap:12px}
+    .slider{-webkit-appearance:none;flex:1;height:8px;border-radius:4px;background:var(--border)}
+    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--primary);cursor:pointer}
+    .stat-box{background:rgba(46,125,50,0.06);border-radius:10px;padding:12px;text-align:center}
+    .stat-box .val{font-size:1.5rem;font-weight:800;color:var(--primary)}
+    .stat-box .lbl{font-size:0.78rem;color:var(--text-muted);margin-top:2px}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <div class="planner-layout">
+      <!-- Sidebar Controls -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <h3 style="font-weight:700;margin-bottom:16px">📏 Garden Dimensions</h3>
+          <div class="form-group">
+            <label class="form-label">Width: <span id="width-val" style="color:var(--primary)">8</span> ft</label>
+            <input type="range" id="width-slider" class="slider" min="3" max="20" value="8" oninput="updateDimensions()"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Length: <span id="length-val" style="color:var(--primary)">8</span> ft</label>
+            <input type="range" id="length-slider" class="slider" min="3" max="20" value="8" oninput="updateDimensions()"/>
+          </div>
+          <button class="btn btn-secondary w-full btn-sm" onclick="resetGrid()">♻️ Reset Grid</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-weight:700;margin-bottom:16px">🌿 Place Plants</h3>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px">Click a plant, then click grid cells to place</p>
+          <div class="plant-palette">
+            <div class="palette-item" onclick="selectPlant(this,'🍅')" title="Tomato">🍅</div>
+            <div class="palette-item" onclick="selectPlant(this,'🌿')" title="Basil">🌿</div>
+            <div class="palette-item" onclick="selectPlant(this,'🌶️')" title="Chilli">🌶️</div>
+            <div class="palette-item" onclick="selectPlant(this,'🥬')" title="Spinach">🥬</div>
+            <div class="palette-item" onclick="selectPlant(this,'🌱')" title="Mint">🌱</div>
+            <div class="palette-item" onclick="selectPlant(this,'🌻')" title="Sunflower">🌻</div>
+            <div class="palette-item" onclick="selectPlant(this,'🪴')" title="Aloe">🪴</div>
+            <div class="palette-item" onclick="selectPlant(this,'🌸')" title="Flower">🌸</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-ghost btn-sm" onclick="selectPlant(null,'🚶')" style="flex:1">🚶 Path</button>
+            <button class="btn btn-ghost btn-sm" onclick="selectPlant(null,'❌')" style="flex:1">❌ Clear</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-weight:700;margin-bottom:14px">📊 Garden Stats</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div class="stat-box"><div class="val" id="stat-plants">0</div><div class="lbl">Plants</div></div>
+            <div class="stat-box"><div class="val" id="stat-capacity">64</div><div class="lbl">Max Capacity</div></div>
+            <div class="stat-box"><div class="val" id="stat-utilization">0%</div><div class="lbl">Utilization</div></div>
+            <div class="stat-box"><div class="val" id="stat-yield">0kg</div><div class="lbl">Est. Yield/mo</div></div>
+          </div>
+          <div style="font-size:0.85rem;color:var(--text-muted)">
+            <div style="margin-bottom:6px">💧 Est. water: <strong id="stat-water">0L/week</strong></div>
+            <div>☀️ Sunlight need: <strong id="stat-sun">Mixed</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-weight:700;margin-bottom:10px">💡 Recommendations</h3>
+          <div id="recommendations" style="font-size:0.85rem;line-height:1.7;color:var(--text-muted)">
+            <div style="margin-bottom:8px">🌿 Add more plants to maximize space usage</div>
+            <div style="margin-bottom:8px">🚶 Consider leaving walking paths between rows</div>
+            <div>📐 Vertical racks can triple your capacity!</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="exportLayout()">💾 Save Layout</button>
+          <button class="btn btn-secondary" onclick="generate3D()">🎨 3D View</button>
+        </div>
+      </div>
+
+      <!-- Grid Area -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <h3 style="font-weight:700">2D Garden Layout</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted)">Click cells to place selected plant or path</p>
+          </div>
+          <span class="badge badge-green" style="font-size:0.85rem">Interactive</span>
+        </div>
+        <div class="garden-grid" id="garden-grid"></div>
+        <div style="margin-top:20px;padding:14px;background:rgba(46,125,50,0.04);border-radius:12px">
+          <div style="font-weight:700;font-size:0.9rem;margin-bottom:8px">🎯 Quick Tips</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">
+            • Leave at least 1.5 ft walking space between rows<br>
+            • Group plants with similar water needs<br>
+            • Place tall plants (tomato, chilli) on north side<br>
+            • Reserve sunny spots for sun-loving vegetables
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('space-planner.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Space Planner','Design your perfect balcony garden');
+
+let width = 8, length = 8;
+let selectedPlant = null;
+let grid = [];
+
+function updateDimensions() {
+  width = parseInt(document.getElementById('width-slider').value);
+  length = parseInt(document.getElementById('length-slider').value);
+  document.getElementById('width-val').textContent = width;
+  document.getElementById('length-val').textContent = length;
+  renderGrid();
+}
+
+function renderGrid() {
+  const cells = width * length;
+  document.getElementById('stat-capacity').textContent = cells;
+  const gridEl = document.getElementById('garden-grid');
+  gridEl.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+  gridEl.innerHTML = '';
+  grid = Array(cells).fill(null);
+  for (let i=0; i<cells; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'garden-cell';
+    cell.dataset.idx = i;
+    cell.onclick = () => placeInCell(i);
+    gridEl.appendChild(cell);
+  }
+  updateStats();
+}
+
+function selectPlant(el, plant) {
+  document.querySelectorAll('.palette-item').forEach(p => p.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  selectedPlant = plant;
+  Toast.show(plant==='🚶'?'Click cells to mark walking path':plant==='❌'?'Click cells to clear':'Click cells to place '+plant, 'info');
+}
+
+function placeInCell(idx) {
+  if (!selectedPlant) { Toast.show('Select a plant first!', 'warning'); return; }
+  const cell = document.querySelector(`[data-idx="${idx}"]`);
+  if (selectedPlant === '❌') {
+    grid[idx] = null;
+    cell.className = 'garden-cell';
+    cell.textContent = '';
+  } else if (selectedPlant === '🚶') {
+    grid[idx] = '🚶';
+    cell.className = 'garden-cell path';
+    cell.textContent = '';
+  } else {
+    grid[idx] = selectedPlant;
+    cell.className = 'garden-cell plant';
+    cell.textContent = selectedPlant;
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const plants = grid.filter(g => g && g!=='🚶').length;
+  const paths = grid.filter(g => g==='🚶').length;
+  const util = Math.round(plants / grid.length * 100);
+  const yield_kg = plants * 0.4; // estimate
+  const water_l = plants * 1.2; // estimate L/week
+
+  document.getElementById('stat-plants').textContent = plants;
+  document.getElementById('stat-utilization').textContent = util+'%';
+  document.getElementById('stat-yield').textContent = yield_kg.toFixed(1)+'kg';
+  document.getElementById('stat-water').textContent = water_l.toFixed(1)+'L/week';
+
+  // Recommendations
+  const recs = [];
+  if (util < 30) recs.push('🌿 You have lots of space! Add more plants to maximize yield.');
+  else if (util < 60) recs.push('✅ Good utilization! Consider vertical racks for more capacity.');
+  else recs.push('🎯 Great space usage! Make sure to leave walking paths.');
+  if (paths === 0) recs.push('🚶 Add walking paths (1-2 ft wide) to access plants easily.');
+  if (plants > 0) recs.push(`💧 ${water_l.toFixed(1)}L water needed per week for ${plants} plants.`);
+  document.getElementById('recommendations').innerHTML = recs.map(r=>`<div style="margin-bottom:8px">${r}</div>`).join('');
+}
+
+function resetGrid() { renderGrid(); Toast.show('Grid reset! 🔄', 'success'); }
+
+function exportLayout() {
+  const data = { width, length, grid };
+  Store.set('garden-layout', data);
+  Toast.show('Layout saved! 💾', 'success');
+}
+
+function generate3D() {
+  Toast.show('3D visualization coming soon! 🎨', 'info');
+}
+
+renderGrid();
+</script>
+</body>
+</html>

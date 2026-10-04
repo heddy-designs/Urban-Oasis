@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body{margin:0;font-family:var(--font)}
+    .admin-layout{display:flex;min-height:100vh}
+    .admin-sidebar{width:240px;background:#0f1f0f;color:rgba(255,255,255,0.9);padding:20px 0;position:fixed;left:0;top:0;bottom:0;overflow-y:auto;display:flex;flex-direction:column}
+    .admin-content{margin-left:240px;flex:1;background:var(--bg);padding:24px;min-height:100vh}
+    @media(max-width:900px){.admin-sidebar{width:200px}.admin-content{margin-left:200px;padding:16px}}
+    @media(max-width:650px){.admin-sidebar{position:fixed;left:-240px;transition:left 0.3s;z-index:200}.admin-sidebar.open{left:0}.admin-content{margin-left:0}}
+    .admin-nav-item{display:flex;align-items:center;gap:10px;padding:12px 20px;cursor:pointer;transition:background 0.2s;font-size:0.9rem;color:rgba(255,255,255,0.75)}
+    .admin-nav-item:hover,.admin-nav-item.active{background:rgba(255,255,255,0.1);color:#fff}
+    .admin-section{display:none;animation:fadeIn 0.3s ease}
+    .admin-section.active{display:block}
+    .admin-table th,.admin-table td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:0.85rem}
+    .admin-table th{font-weight:700;color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;background:rgba(46,125,50,0.03)}
+    .admin-table tr:hover td{background:rgba(46,125,50,0.02)}
+    .admin-table{width:100%;border-collapse:collapse}
+    .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div style="padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.1)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:34px;height:34px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🌿</div>
+        <div><div style="font-weight:800;font-size:1rem">Urban Oasis</div><div style="font-size:0.72rem;opacity:0.7">Admin Panel</div></div>
+      </div>
+    </div>
+    <div style="flex:1;padding:12px 0">
+      <div class="admin-nav-item active" onclick="adminNav('overview',this)">📊 Overview</div>
+      <div class="admin-nav-item" onclick="adminNav('users',this)">👥 Users</div>
+      <div class="admin-nav-item" onclick="adminNav('plants',this)">🌿 Plants</div>
+      <div class="admin-nav-item" onclick="adminNav('diseases',this)">🔬 Diseases</div>
+      <div class="admin-nav-item" onclick="adminNav('analytics',this)">📈 Analytics</div>
+      <div class="admin-nav-item" onclick="adminNav('reports',this)">📋 Reports</div>
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1)">
+      <a href="dashboard.html" style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.7);font-size:0.85rem">← Back to App</a>
+    </div>
+  </aside>
+
+  <!-- Admin Content -->
+  <main class="admin-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:800" id="admin-page-title">Overview</h1>
+        <div style="font-size:0.85rem;color:var(--text-muted)" id="admin-page-sub">Welcome to Urban Oasis Admin</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="theme-toggle-btn btn btn-ghost btn-sm">🌙</button>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;cursor:pointer" title="Admin">A</div>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="admin-section active" id="section-overview">
+      <div class="grid-4" style="margin-bottom:24px">
+        <div class="card stat-card"><div class="stat-icon" style="background:rgba(46,125,50,0.1);color:var(--primary)">👥</div><div><div class="stat-value">12,483</div><div class="stat-label">Total Users</div><div class="stat-change up">↑ +342 this week</div></div></div>
+        <div class="card stat-card"><div class="stat-icon" style="background:rgba(33,150,243,0.1);color:#2196F3">🌿</div><div><div class="stat-value">248</div><div class="stat-label">Plants in DB</div><div class="stat-change up">↑ +8 added</div></div></div>
+        <div class="card stat-card"><div class="stat-icon" style="background:rgba(229,57,53,0.1);color:#e53935">🔬</div><div><div class="stat-value">56</div><div class="stat-label">Diseases DB</div><div class="stat-change up">↑ +3 added</div></div></div>
+        <div class="card stat-card"><div class="stat-icon" style="background:rgba(255,152,0,0.1);color:#FF9800">📊</div><div><div class="stat-value">98%</div><div class="stat-label">Uptime</div><div class="stat-change up">↑ Healthy</div></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:16px">📈 User Growth (Last 6 Months)</div>
+          <div style="height:200px"><canvas id="admin-growth-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:16px">🌿 Module Usage</div>
+          <div style="height:200px"><canvas id="admin-module-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div style="font-weight:700;margin-bottom:16px">🔴 Recent Activity</div>
+        <table class="admin-table">
+          <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>2 min ago</td><td>priya@example.com</td><td>Uploaded plant photo</td><td><span class="badge badge-green">Success</span></td></tr>
+            <tr><td>5 min ago</td><td>rahul@example.com</td><td>Disease identifier used</td><td><span class="badge badge-green">Success</span></td></tr>
+            <tr><td>12 min ago</td><td>new user signup</td><td>Registration</td><td><span class="badge badge-blue">Info</span></td></tr>
+            <tr><td>18 min ago</td><td>anjali@example.com</td><td>Community post</td><td><span class="badge badge-green">Success</span></td></tr>
+            <tr><td>25 min ago</td><td>System</td><td>Database backup</td><td><span class="badge badge-green">Complete</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="admin-section" id="section-users">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="search-bar" style="max-width:340px;flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="user-search" class="form-input" placeholder="Search users..." style="padding-left:44px;border-radius:50px"/>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-user-modal')">+ Add User</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table class="admin-table" id="users-table">
+          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>City</th><th>Experience</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PLANTS -->
+    <div class="admin-section" id="section-plants">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-weight:700">Plant Database (8 of 248)</h3>
+        <button class="btn btn-primary btn-sm" onclick="Toast.show('Add plant modal','info')">+ Add Plant</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table class="admin-table" id="plants-table">
+          <thead><tr><th>Icon</th><th>Name</th><th>Category</th><th>Difficulty</th><th>Water Freq.</th><th>Harvest</th><th>Actions</th></tr></thead>
+          <tbody id="plants-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DISEASES -->
+    <div class="admin-section" id="section-diseases">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-weight:700">Disease Database (4 shown)</h3>
+        <button class="btn btn-primary btn-sm" onclick="Toast.show('Add disease modal','info')">+ Add Disease</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th>Disease</th><th>Affected Plants</th><th>Confidence</th><th>Treatments</th><th>Status</th></tr></thead>
+          <tbody id="disease-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="admin-section" id="section-analytics">
+      <div class="grid-3" style="margin-bottom:20px">
+        <div class="card" style="text-align:center;padding:28px">
+          <div style="font-size:2rem;margin-bottom:8px">🌿</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--primary)">2.4M</div>
+          <div style="color:var(--text-muted)">Total Plant Views</div>
+        </div>
+        <div class="card" style="text-align:center;padding:28px">
+          <div style="font-size:2rem;margin-bottom:8px">🔬</div>
+          <div style="font-size:2rem;font-weight:800;color:#e53935">45,280</div>
+          <div style="color:var(--text-muted)">Disease Scans</div>
+        </div>
+        <div class="card" style="text-align:center;padding:28px">
+          <div style="font-size:2rem;margin-bottom:8px">🤖</div>
+          <div style="font-size:2rem;font-weight:800;color:#9C27B0">128,470</div>
+          <div style="color:var(--text-muted)">AI Conversations</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:16px">📊 Top Modules by Usage</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem"><span>🌿 Plant Library</span><span>35%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem"><span>🤖 AI Assistant</span><span>28%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:28%;background:#9C27B0"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem"><span>🔬 Disease Identifier</span><span>18%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:18%;background:#e53935"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem"><span>💧 Water Calculator</span><span>11%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:11%;background:#2196F3"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.85rem"><span>📐 Space Planner</span><span>8%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:8%;background:#FF9800"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="admin-section" id="section-reports">
+      <div class="grid-2" style="gap:20px">
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:16px">📋 Generate Reports</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <button class="btn btn-secondary w-full" onclick="genReport('users')">👥 User Report (CSV)</button>
+            <button class="btn btn-secondary w-full" onclick="genReport('activity')">📊 Activity Report</button>
+            <button class="btn btn-secondary w-full" onclick="genReport('plants')">🌿 Plant Database Export</button>
+            <button class="btn btn-secondary w-full" onclick="genReport('diseases')">🔬 Disease Database Export</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:16px">📅 Scheduled Reports</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(46,125,50,0.04);border:1px solid var(--border)">
+              <div><div style="font-weight:600;font-size:0.9rem">Daily User Summary</div><div style="font-size:0.78rem;color:var(--text-muted)">Every day at 8:00 AM</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(46,125,50,0.04);border:1px solid var(--border)">
+              <div><div style="font-weight:600;font-size:0.9rem">Weekly Analytics</div><div style="font-size:0.78rem;color:var(--text-muted)">Every Monday at 9:00 AM</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(46,125,50,0.04);border:1px solid var(--border)">
+              <div><div style="font-weight:600;font-size:0.9rem">Monthly DB Backup</div><div style="font-size:0.78rem;color:var(--text-muted)">1st of every month</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script>
+function adminNav(sec, el) {
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('section-'+sec).classList.add('active');
+  el.classList.add('active');
+  const titles = {overview:'Overview',users:'User Management',plants:'Plant Database',diseases:'Disease Database',analytics:'Analytics',reports:'Reports'};
+  document.getElementById('admin-page-title').textContent = titles[sec]||sec;
+  if (sec==='users') renderUsers();
+  if (sec==='plants') renderPlants();
+  if (sec==='diseases') renderDiseases();
+  if (sec==='analytics'||sec==='overview') setTimeout(renderCharts,100);
+}
+
+const ADMIN_USERS = [
+  {id:1,name:'Priya Sharma',email:'priya@example.com',city:'Bangalore',exp:'Intermediate',joined:'Jan 2025',status:'Active'},
+  {id:2,name:'Rahul Verma',email:'rahul@example.com',city:'Mumbai',exp:'Beginner',joined:'Feb 2025',status:'Active'},
+  {id:3,name:'Anjali Nair',email:'anjali@example.com',city:'Hyderabad',exp:'Beginner',joined:'Mar 2025',status:'Active'},
+  {id:4,name:'Karthik M',email:'karthik@example.com',city:'Chennai',exp:'Expert',joined:'Jan 2025',status:'Active'},
+  {id:5,name:'Demo User',email:'demo@urbanoasis.com',city:'Unknown',exp:'Beginner',joined:'May 2025',status:'Active'},
+];
+
+function renderUsers() {
+  document.getElementById('users-tbody').innerHTML = ADMIN_USERS.map((u,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><div style="font-weight:600">${u.name}</div></td>
+      <td style="color:var(--text-muted)">${u.email}</td>
+      <td>${u.city}</td>
+      <td><span class="badge ${u.exp==='Beginner'?'badge-green':u.exp==='Intermediate'?'badge-yellow':'badge-red'}">${u.exp}</span></td>
+      <td style="color:var(--text-muted)">${u.joined}</td>
+      <td><span class="badge badge-green"><span class="status-dot" style="background:#4CAF50"></span>${u.status}</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="Toast.show('Edit user: ${u.name}','info')">✏️</button> <button class="btn btn-ghost btn-sm" onclick="Toast.show('User deactivated','warning')" style="color:#e53935">🚫</button></td>
+    </tr>`).join('');
+}
+
+function renderPlants() {
+  document.getElementById('plants-tbody').innerHTML = PLANT_LIBRARY.map(p=>`
+    <tr>
+      <td style="font-size:1.6rem">${p.emoji}</td>
+      <td><div style="font-weight:600">${p.name}</div></td>
+      <td><span class="badge badge-green">${p.category}</span></td>
+      <td><span class="badge ${p.difficulty==='Beginner'?'badge-green':p.difficulty==='Intermediate'?'badge-yellow':'badge-red'}">${p.difficulty}</span></td>
+      <td>${p.water}</td>
+      <td>${p.harvest}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="Toast.show('Edit: ${p.name}','info')">✏️</button> <button class="btn btn-ghost btn-sm" style="color:#e53935">🗑️</button></td>
+    </tr>`).join('');
+}
+
+function renderDiseases() {
+  document.getElementById('disease-tbody').innerHTML = DISEASES_DB.map(d=>`
+    <tr>
+      <td><div style="font-weight:600">${d.name}</div></td>
+      <td style="color:var(--text-muted)">${d.plant}</td>
+      <td><span class="badge ${d.confidence>85?'badge-green':'badge-yellow'}">${d.confidence}%</span></td>
+      <td style="color:var(--text-muted)">${d.organic.length} organic, ${d.chemical.length} chemical</td>
+      <td><span class="badge badge-green">Active</span></td>
+    </tr>`).join('');
+}
+
+let adminGrowthChart, adminModuleChart;
+function renderCharts() {
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const tc = isDark?'#9ca3af':'#6b7280';
+
+  if (document.getElementById('admin-growth-chart')) {
+    if(adminGrowthChart) adminGrowthChart.destroy();
+    adminGrowthChart = new Chart(document.getElementById('admin-growth-chart').getContext('2d'),{
+      type:'line',
+      data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'New Users',data:[1200,1800,2400,3100,4200,12483],borderColor:'#2E7D32',backgroundColor:'rgba(46,125,50,0.1)',tension:0.4,fill:true,borderWidth:2.5}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}},scales:{x:{ticks:{color:tc}},y:{ticks:{color:tc},beginAtZero:true}}}
+    });
+  }
+  if (document.getElementById('admin-module-chart')) {
+    if(adminModuleChart) adminModuleChart.destroy();
+    adminModuleChart = new Chart(document.getElementById('admin-module-chart').getContext('2d'),{
+      type:'doughnut',
+      data:{labels:['Plant Library','AI Chat','Disease ID','Water Calc','Planner'],datasets:[{data:[35,28,18,11,8],backgroundColor:['#2E7D32','#9C27B0','#e53935','#2196F3','#FF9800'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10}}}}}
+    });
+  }
+}
+
+function genReport(type) {
+  Toast.show(`Generating ${type} report... downloading CSV 📥`,'info');
+  setTimeout(() => Toast.show('Report downloaded!','success'), 1200);
+}
+
+setTimeout(renderCharts, 100);
+</script>
+</body>
+</html>

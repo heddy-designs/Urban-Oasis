@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    .floating-shapes { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .shape { position:absolute; border-radius:50%; opacity:0.08; animation:floatShape 8s ease-in-out infinite; }
+    .shape-1 { width:300px;height:300px;background:#fff;top:-100px;right:-80px;animation-delay:-2s; }
+    .shape-2 { width:200px;height:200px;background:#fff;bottom:-60px;left:-60px;animation-delay:-5s; }
+    .shape-3 { width:100px;height:100px;background:#fff;top:40%;left:20%; }
+    @keyframes floatShape { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(20px,-20px) scale(1.05)} 66%{transform:translate(-15px,15px) scale(0.95)} }
+    .visual-features { display:flex;flex-direction:column;gap:16px;margin-top:36px; }
+    .visual-feature { display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.12);border-radius:12px;padding:14px 18px; }
+    .password-toggle { position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:1rem; }
+    .social-btns { display:flex;gap:12px;margin-bottom:20px; }
+    .social-btn { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;border:2px solid var(--border);font-weight:600;font-size:0.88rem;transition:var(--transition);cursor:pointer;background:var(--bg); }
+    .social-btn:hover { border-color:var(--primary);color:var(--primary); }
+  </style>
+</head>
+<body>
+<div class="auth-wrapper">
+  <!-- Left Visual -->
+  <div class="auth-visual">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="auth-visual-content">
+      <div style="font-size:4rem;margin-bottom:20px">🌿</div>
+      <div class="auth-visual-title">Welcome Back,<br/>Gardener!</div>
+      <p class="auth-visual-subtitle">Continue your urban gardening journey and watch your plants thrive.</p>
+      <div class="visual-features">
+        <div class="visual-feature">
+          <span style="font-size:1.3rem">🌱</span>
+          <span>Smart Plant Recommendations</span>
+        </div>
+        <div class="visual-feature">
+          <span style="font-size:1.3rem">💧</span>
+          <span>Automated Watering Schedules</span>
+        </div>
+        <div class="visual-feature">
+          <span style="font-size:1.3rem">🔬</span>
+          <span>AI Disease Diagnosis</span>
+        </div>
+        <div class="visual-feature">
+          <span style="font-size:1.3rem">📊</span>
+          <span>Garden Analytics & Reports</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Right Form -->
+  <div class="auth-form-section">
+    <div class="auth-form-container">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px;margin-bottom:32px;font-weight:700;color:var(--primary)">
+        <span style="font-size:1.4rem">🌿</span> Urban Oasis
+      </a>
+      <h1 class="auth-title">Sign In</h1>
+      <p class="auth-subtitle">Don't have an account? <a href="signup.html" style="color:var(--primary);font-weight:600">Sign up free</a></p>
+
+      <div class="social-btns">
+        <button class="social-btn" onclick="socialLogin('google')">
+          <span>🔴</span> Google
+        </button>
+        <button class="social-btn" onclick="socialLogin('facebook')">
+          <span>🔵</span> Facebook
+        </button>
+      </div>
+      <div class="divider">or sign in with email</div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <div class="input-group">
+            <span class="input-icon">📧</span>
+            <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <span class="form-error" id="email-error">Please enter a valid email.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-group" style="position:relative">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+            <span class="password-toggle" onclick="togglePassword('password',this)" title="Show/Hide password">👁️</span>
+          </div>
+          <span class="form-error" id="password-error">Password is required.</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.88rem;cursor:pointer">
+            <input type="checkbox" id="remember" style="accent-color:var(--primary)"> Remember me
+          </label>
+          <a href="forgot-password.html" style="font-size:0.88rem;color:var(--primary);font-weight:600">Forgot password?</a>
+        </div>
+        <div id="form-error" class="form-error" style="margin-bottom:16px;padding:10px 14px;background:rgba(229,57,53,0.08);border-radius:8px;border:1px solid rgba(229,57,53,0.2)"></div>
+        <button type="submit" class="btn btn-primary w-full btn-lg" id="submit-btn">
+          Sign In
+        </button>
+      </form>
+      <div class="auth-footer-text">
+        New to Urban Oasis? <a href="signup.html">Create a free account →</a>
+      </div>
+      <div style="margin-top:16px;text-align:center;font-size:0.78rem;color:var(--text-muted)">
+        Demo: admin@urbanoasis.com / admin123
+      </div>
+      <div style="margin-top:4px;text-align:center;font-size:0.78rem;color:var(--text-muted)">
+        <button class="theme-toggle-btn btn btn-ghost btn-sm">🌙 Toggle Theme</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script>
+function togglePassword(id, btn) {
+  const inp = document.getElementById(id);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+function socialLogin(provider) {
+  Toast.show(`${provider} login coming soon!`, 'info');
+}
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const emailErr = document.getElementById('email-error');
+  const passErr = document.getElementById('password-error');
+  const formErr = document.getElementById('form-error');
+  const btn = document.getElementById('submit-btn');
+  let valid = true;
+  emailErr.classList.remove('show'); passErr.classList.remove('show'); formErr.classList.remove('show');
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { emailErr.classList.add('show'); valid = false; }
+  if (!password) { passErr.classList.add('show'); valid = false; }
+  if (!valid) return;
+  btn.disabled = true; btn.innerHTML = '<div class="spin" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;display:inline-block"></div> Signing in...';
+  // Demo credentials check
+  if (email === 'admin@urbanoasis.com' && password === 'admin123') {
+    Auth.setSession('demo-token-123', { name: 'Admin User', email, role: 'admin' });
+    Toast.show('Welcome back, Admin! 🌿', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 800);
+    return;
+  }
+  if (email === 'demo@urbanoasis.com' && password === 'demo123') {
+    Auth.setSession('demo-token-456', { name: 'Demo User', email, role: 'user' });
+    Toast.show('Welcome back! 🌱', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 800);
+    return;
+  }
+  try {
+    const res = await API.post('/auth/login', { email, password });
+    if (res && res.token) {
+      Auth.setSession(res.token, res.user);
+      Toast.show('Welcome back! 🌱', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
+    } else {
+      formErr.textContent = 'Invalid email or password. Try: demo@urbanoasis.com / demo123';
+      formErr.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  } catch (err) {
+    formErr.textContent = err.message || 'Invalid email or password.';
+    formErr.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+});
+</script>
+</body>
+</html>

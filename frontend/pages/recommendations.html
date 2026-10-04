@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plant Recommendations – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .rec-form-card { max-width:700px; margin:0 auto; }
+    .option-group { display:grid; gap:10px; }
+    .option-grid-3 { grid-template-columns:repeat(3,1fr); }
+    .option-grid-4 { grid-template-columns:repeat(4,1fr); }
+    @media(max-width:600px){.option-grid-3,.option-grid-4{grid-template-columns:1fr 1fr}}
+    .option-btn { border:2px solid var(--border); border-radius:14px; padding:16px 12px; text-align:center; cursor:pointer; transition:var(--transition); background:var(--bg-card); }
+    .option-btn:hover, .option-btn.selected { border-color:var(--primary); background:rgba(46,125,50,0.06); }
+    .option-btn .icon { font-size:2rem; display:block; margin-bottom:6px; }
+    .option-btn .label { font-size:0.85rem; font-weight:600; }
+    .option-btn .desc { font-size:0.75rem; color:var(--text-muted); margin-top:2px; }
+    .rec-result { animation:slideUp 0.4s ease; }
+    .plant-rec-card { border-radius:18px; padding:20px; border:1px solid var(--border); transition:var(--transition); cursor:pointer; }
+    .plant-rec-card:hover { border-color:var(--primary); transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+    .plant-rec-card .plant-emoji { font-size:3.5rem; text-align:center; margin-bottom:12px; }
+    .plant-rec-badge { display:inline-block; padding:3px 10px; border-radius:50px; font-size:0.72rem; font-weight:700; margin-bottom:8px; }
+    .shopping-item { display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; background:rgba(46,125,50,0.04); margin-bottom:8px; }
+    .dash-layout { display:flex; min-height:100vh; }
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <!-- Sidebar injected by JS -->
+  <div id="sidebar-container"></div>
+
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <!-- FORM SECTION -->
+    <div id="form-section">
+      <div class="rec-form-card">
+        <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(46,125,50,0.06),rgba(102,187,106,0.04))">
+          <div style="text-align:center;padding:8px 0 16px">
+            <div style="font-size:2.5rem;margin-bottom:8px">🌱</div>
+            <h2 style="font-size:1.5rem;font-weight:800">Smart Plant Finder</h2>
+            <p style="color:var(--text-muted);font-size:0.95rem">Tell us about your space and get personalized recommendations</p>
+          </div>
+        </div>
+
+        <!-- Step 1: Location Type -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:16px">📍 Step 1: What space do you have?</div>
+          <div class="option-group option-grid-3">
+            <div class="option-btn" onclick="pick(this,'location','balcony')">
+              <span class="icon">🪟</span><div class="label">Balcony</div><div class="desc">Apartment balcony</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'location','terrace')">
+              <span class="icon">🏠</span><div class="label">Terrace</div><div class="desc">Rooftop/terrace</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'location','indoor')">
+              <span class="icon">🏢</span><div class="label">Indoor</div><div class="desc">Window/room</div>
+            </div>
+          </div>
+          <input type="hidden" id="f-location"/>
+        </div>
+
+        <!-- Step 2: Sunlight -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:16px">☀️ Step 2: How much sunlight do you get?</div>
+          <div class="option-group option-grid-3">
+            <div class="option-btn" onclick="pick(this,'sunlight','fullSun')">
+              <span class="icon">☀️</span><div class="label">Full Sun</div><div class="desc">6+ hours/day</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'sunlight','partialSun')">
+              <span class="icon">⛅</span><div class="label">Partial Sun</div><div class="desc">3-6 hours/day</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'sunlight','shade')">
+              <span class="icon">🌥️</span><div class="label">Shade</div><div class="desc">Under 3 hours</div>
+            </div>
+          </div>
+          <input type="hidden" id="f-sunlight"/>
+        </div>
+
+        <!-- Step 3: Experience -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:16px">🎓 Step 3: What's your experience level?</div>
+          <div class="option-group option-grid-3">
+            <div class="option-btn" onclick="pick(this,'experience','beginner')">
+              <span class="icon">🌱</span><div class="label">Beginner</div><div class="desc">Just starting out</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'experience','intermediate')">
+              <span class="icon">🌿</span><div class="label">Intermediate</div><div class="desc">1-2 years of gardening</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'experience','expert')">
+              <span class="icon">🌳</span><div class="label">Expert</div><div class="desc">3+ years experience</div>
+            </div>
+          </div>
+          <input type="hidden" id="f-experience"/>
+        </div>
+
+        <!-- Step 4: Budget -->
+        <div class="card" style="margin-bottom:24px">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:16px">💰 Step 4: What's your budget?</div>
+          <div class="option-group option-grid-3">
+            <div class="option-btn" onclick="pick(this,'budget','small')">
+              <span class="icon">💵</span><div class="label">Small</div><div class="desc">Under ₹500</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'budget','medium')">
+              <span class="icon">💰</span><div class="label">Medium</div><div class="desc">₹500 – ₹2,000</div>
+            </div>
+            <div class="option-btn" onclick="pick(this,'budget','large')">
+              <span class="icon">💎</span><div class="label">Large</div><div class="desc">₹2,000+</div>
+            </div>
+          </div>
+          <input type="hidden" id="f-budget"/>
+        </div>
+
+        <button class="btn btn-primary w-full btn-lg" onclick="generateRecs()">
+          🔍 Get My Plant Recommendations
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULTS SECTION -->
+    <div id="results-section" style="display:none" class="rec-result">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="font-size:1.5rem;font-weight:800">🌿 Your Recommendations</h2>
+          <p style="color:var(--text-muted)" id="rec-subtitle">Best plants for your space</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="showSection('shopping')">🛒 Shopping List</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('results-section').style.display='none';document.getElementById('form-section').style.display='block'">← Edit Preferences</button>
+        </div>
+      </div>
+      <div class="grid-3" id="rec-cards" style="margin-bottom:32px"></div>
+
+      <!-- Shopping List -->
+      <div id="shopping-section" style="display:none">
+        <div class="card">
+          <div style="font-weight:700;font-size:1.1rem;margin-bottom:20px">🛒 Shopping List</div>
+          <div id="shopping-list"></div>
+          <div style="margin-top:20px;padding:16px;background:rgba(46,125,50,0.06);border-radius:12px">
+            <div style="font-weight:700;color:var(--primary)">💰 Estimated Budget</div>
+            <div id="budget-total" style="font-size:1.4rem;font-weight:800;margin-top:4px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('recommendations.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Plant Recommendations', 'AI-powered suggestions for your space');
+
+const picks = {};
+function pick(el, group, val) {
+  el.closest('.option-group').querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById(`f-${group}`).value = val;
+  picks[group] = val;
+}
+
+const SHOPPING_DB = {
+  tomato: [{item:'Cherry Tomato Seeds',qty:'1 pack',price:120,where:'Nursery'},{item:'Terracotta Pot 10"',qty:'2',price:360,where:'Garden Store'},{item:'NPK Fertilizer',qty:'500g',price:145,where:'AgriStore'},{item:'Grow Bag 10L',qty:'2',price:160,where:'Online'}],
+  herb: [{item:'Herb Seed Mix',qty:'1 pack',price:80,where:'Nursery'},{item:'Small Pots 4"',qty:'4',price:160,where:'Garden Store'},{item:'Potting Mix',qty:'5kg',price:200,where:'AgriStore'}],
+  default: [{item:'Mixed Vegetable Seeds',qty:'1 pack',price:100,where:'Nursery'},{item:'Grow Bags 5L',qty:'3',price:180,where:'Online'},{item:'General Fertilizer',qty:'1kg',price:120,where:'AgriStore'},{item:'Watering Can',qty:'1',price:285,where:'Home Store'}]
+};
+
+function generateRecs() {
+  const loc = picks.location, sun = picks.sunlight, exp = picks.experience, bud = picks.budget;
+  if (!loc || !sun || !exp || !bud) { Toast.show('Please fill all 4 steps!', 'warning'); return; }
+
+  const btn = event.target;
+  btn.innerHTML = '<div class="spin" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;display:inline-block"></div> Analyzing...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    btn.innerHTML = '🔍 Get My Plant Recommendations';
+    btn.disabled = false;
+
+    const plantNames = (RECOMMENDATIONS_ENGINE[loc]?.[sun]?.[exp]) || ['Spinach 🥬','Mint 🌱','Coriander 🌾','Aloe Vera 🪴'];
+    const limit = bud === 'small' ? 3 : bud === 'medium' ? 5 : plantNames.length;
+    const selected = plantNames.slice(0, Math.min(limit, plantNames.length));
+
+    document.getElementById('rec-subtitle').textContent = `${selected.length} plants perfect for your ${loc} with ${sun.replace('Sun','').toLowerCase()} sun`;
+
+    const detailMap = {
+      '🍅': {water:'Daily',harvest:'65 days',diff:'Easy',benefits:'High yield, Vitamin C rich',care:'Beginner-friendly'},
+      '🌶️': {water:'Alt. days',harvest:'80 days',diff:'Medium',benefits:'Rich in Vitamin C, antioxidants',care:'Intermediate'},
+      '🌿': {water:'2x/week',harvest:'30 days',diff:'Easy',benefits:'Culinary herb, repels pests',care:'Beginner-friendly'},
+      '🥬': {water:'Daily',harvest:'40 days',diff:'Easy',benefits:'High iron, Vitamin K',care:'Beginner-friendly'},
+      '🌱': {water:'Daily',harvest:'25 days',diff:'Easy',benefits:'Digestive aid, refreshing',care:'Beginner-friendly'},
+      '🪴': {water:'Weekly',harvest:'90 days',diff:'Easy',benefits:'Medicinal gel, air purifier',care:'Very low maintenance'},
+      '🌾': {water:'Daily',harvest:'21 days',diff:'Easy',benefits:'Essential cooking herb',care:'Beginner-friendly'},
+      '💚': {water:'Weekly',harvest:'N/A',diff:'Easy',benefits:'Air purifier, low light',care:'Minimal care needed'},
+    };
+
+    document.getElementById('rec-cards').innerHTML = selected.map((p,i) => {
+      const emoji = p.match(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{26FF}]/u)?.[0] || '🌿';
+      const name = p.replace(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{26FF}]/gu,'').trim();
+      const d = detailMap[emoji] || {water:'As needed',harvest:'Varies',diff:'Easy',benefits:'Various',care:'Moderate'};
+      return `<div class="card plant-rec-card animate-slide-up" style="animation-delay:${i*0.08}s">
+        <div class="plant-emoji">${emoji}</div>
+        <h3 style="font-weight:700;text-align:center;margin-bottom:10px">${name}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;margin-bottom:12px">
+          <div style="background:rgba(46,125,50,0.06);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--text-muted)">💧 Water</div><div style="font-weight:600">${d.water}</div></div>
+          <div style="background:rgba(255,152,0,0.06);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--text-muted)">🌾 Harvest</div><div style="font-weight:600">${d.harvest}</div></div>
+          <div style="background:rgba(33,150,243,0.06);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--text-muted)">🎓 Level</div><div style="font-weight:600">${d.diff}</div></div>
+          <div style="background:rgba(156,39,176,0.06);border-radius:8px;padding:8px;text-align:center"><div style="color:var(--text-muted)">🌿 Care</div><div style="font-weight:600">${d.care}</div></div>
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">✅ ${d.benefits}</div>
+      </div>`;
+    }).join('');
+
+    // Shopping list
+    const items = SHOPPING_DB.default;
+    document.getElementById('shopping-list').innerHTML = items.map(s => `
+      <div class="shopping-item">
+        <span style="font-size:1.3rem">🛍️</span>
+        <div style="flex:1"><div style="font-weight:600;font-size:0.9rem">${s.item}</div><div style="font-size:0.78rem;color:var(--text-muted)">Qty: ${s.qty} • ${s.where}</div></div>
+        <div style="font-weight:700;color:var(--primary)">₹${s.price}</div>
+      </div>`).join('');
+    document.getElementById('budget-total').textContent = '₹' + items.reduce((s,i)=>s+i.price,0) + ' estimated total';
+
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('results-section').style.display = 'block';
+    Toast.show('🌱 Recommendations ready!', 'success');
+  }, 1600);
+}
+
+function showSection(sec) {
+  const el = document.getElementById('shopping-section');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  el.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>

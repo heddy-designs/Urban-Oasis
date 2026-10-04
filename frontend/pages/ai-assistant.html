@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Garden Assistant – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important;padding:12px}}
+    .chat-layout{display:grid;grid-template-columns:1fr 280px;gap:20px;height:calc(100vh - 120px);min-height:600px}
+    @media(max-width:900px){.chat-layout{grid-template-columns:1fr;height:auto}}
+    .chat-container{display:flex;flex-direction:column;height:100%;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+    .chat-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .ai-status{width:8px;height:8px;border-radius:50%;background:#4CAF50;animation:pulse 2s infinite}
+    .chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+    .chat-message{display:flex;gap:12px;max-width:85%;animation:slideUp 0.3s ease}
+    .chat-message.user{align-self:flex-end;flex-direction:row-reverse}
+    .chat-bubble{padding:13px 17px;border-radius:18px;font-size:0.91rem;line-height:1.65;word-break:break-word}
+    .chat-message.bot .chat-bubble{background:var(--bg);border:1px solid var(--border);border-bottom-left-radius:4px}
+    .chat-message.user .chat-bubble{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border-bottom-right-radius:4px}
+    .chat-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .chat-bot-avatar{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff}
+    .chat-user-avatar{background:linear-gradient(135deg,#2196F3,#64B5F6);color:#fff}
+    .chat-input-bar{padding:14px 16px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end}
+    .chat-input{flex:1;resize:none;border:2px solid var(--border);border-radius:14px;padding:12px 14px;font-family:var(--font);font-size:0.9rem;background:var(--bg);color:var(--text);outline:none;max-height:120px;transition:var(--transition)}
+    .chat-input:focus{border-color:var(--primary)}
+    .send-btn{width:44px;height:44px;border-radius:12px;background:var(--primary);color:#fff;font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);flex-shrink:0;border:none}
+    .send-btn:hover{background:var(--primary-dark);transform:scale(1.05)}
+    .typing-indicator{display:flex;gap:4px;align-items:center;padding:13px 17px}
+    .typing-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);animation:typingBounce 0.8s ease infinite}
+    .typing-dot:nth-child(2){animation-delay:0.15s}
+    .typing-dot:nth-child(3){animation-delay:0.3s}
+    @keyframes typingBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    .example-chip{padding:8px 14px;border-radius:50px;border:1px solid var(--border);font-size:0.82rem;cursor:pointer;transition:var(--transition);background:var(--bg-card)}
+    .example-chip:hover{border-color:var(--primary);color:var(--primary);background:rgba(46,125,50,0.04)}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <div class="chat-layout">
+      <!-- CHAT -->
+      <div class="chat-container">
+        <div class="chat-header">
+          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:1.3rem">🤖</div>
+          <div style="flex:1">
+            <div style="font-weight:700">Oasis AI Assistant</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);display:flex;align-items:center;gap:6px">
+              <span class="ai-status"></span>Online • Expert gardening advisor
+            </div>
+          </div>
+          <button onclick="clearChat()" class="btn btn-ghost btn-sm">🗑️ Clear</button>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <!-- Welcome message injected by JS -->
+        </div>
+
+        <div class="chat-input-bar">
+          <textarea id="chat-input" class="chat-input" placeholder="Ask anything about your plants..." rows="1"
+            onkeydown="handleKey(event)"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+          <button class="send-btn" onclick="sendMessage()">↑</button>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div style="display:flex;flex-direction:column;gap:16px;overflow-y:auto">
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">💡 Try asking...</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="example-chip" onclick="sendExample(this.textContent)">🍃 My leaves are yellow</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">🍅 My tomato is dying</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">🌿 What plant grows in shade?</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">💧 How often to water basil?</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">🐛 White powder on my leaves</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">🌱 Best plants for a beginner?</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">🌶️ Chilli not fruiting — why?</div>
+            <div class="example-chip" onclick="sendExample(this.textContent)">💊 Organic fertilizer recipe</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:12px">🌿 AI Capabilities</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:0.82rem;color:var(--text-muted)">
+            <div>🔬 Disease diagnosis from descriptions</div>
+            <div>💧 Watering schedules & advice</div>
+            <div>🌱 Plant recommendations</div>
+            <div>🌿 Organic pest control tips</div>
+            <div>🌾 Harvest timing guidance</div>
+            <div>🪴 Soil & fertilizer advice</div>
+            <div>📅 Care schedule planning</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:12px">📊 Chat History</div>
+          <div id="chat-history" style="display:flex;flex-direction:column;gap:6px;font-size:0.82rem;color:var(--text-muted)">
+            <div style="color:var(--text-muted);font-size:0.8rem">No previous sessions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('ai-assistant.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('AI Garden Assistant','Ask anything about your plants');
+
+const AI_KNOWLEDGE = {
+  'yellow leaves': `Yellow leaves can mean several things:
+
+**Most common causes:**
+1. **Overwatering** 💧 — Most common! Check if soil is constantly wet. Let it dry out between waterings.
+2. **Underwatering** — Soil is bone dry? Water immediately and deeply.
+3. **Nutrient deficiency** — Nitrogen deficiency causes older leaves to yellow. Use NPK fertilizer (higher N).
+4. **Too little light** ☀️ — Move plant to brighter spot.
+5. **Natural aging** — Bottom leaves yellowing? Normal process.
+
+**What to do:**
+• Stick your finger 2cm into soil — if wet, reduce watering
+• Check for pests on the underside of leaves
+• Apply balanced fertilizer if soil nutrients are low
+• Ensure adequate drainage holes in pots
+
+Need more help? Tell me which plant is affected! 🌿`,
+
+  'tomato dying': `Let me help diagnose your tomato! Here are the most common issues:
+
+**Symptoms & Solutions:**
+
+🍂 **Wilting despite watering** — Check for Root Rot (overwatering) or Fusarium Wilt (fungal). Remove affected plant.
+
+🔴 **Brown spots on leaves** — Early Blight! Apply neem oil or copper fungicide. Remove infected leaves.
+
+🌿 **Curling leaves** — Could be heat stress, overwatering, or Leaf Curl Virus. Check for whiteflies underneath.
+
+🌱 **No flowers/fruit** — Too much nitrogen, low temps, or inconsistent watering. Use potassium-rich fertilizer.
+
+**Emergency care:**
+1. Stop watering if soil is wet
+2. Remove all yellowed/infected leaves
+3. Ensure 6+ hours of direct sunlight
+4. Spray with diluted neem oil (5ml/1L water)
+
+What specific symptom is your tomato showing? 🍅`,
+
+  'shade': `Best plants for shade or low-light conditions:
+
+**For balcony/indoor with little sun:**
+
+🌿 **Easy (Beginner):**
+• Money Plant (Pothos) — virtually indestructible
+• Snake Plant (Sansevieria) — tolerates neglect
+• Peace Lily — flowers in low light
+• Fern — thrives in humid shade
+• Mint — actually prefers partial shade!
+
+🌿 **Intermediate:**
+• Cast Iron Plant — lives up to its name
+• Dracaena — dramatic foliage
+• Spider Plant — great for hanging
+
+🍃 **Vegetables that tolerate shade:**
+• Spinach 🥬
+• Lettuce
+• Coriander/Cilantro
+• Methi (Fenugreek)
+
+**My recommendation:** Start with Money Plant and Mint — both are nearly foolproof and useful! 💚`,
+
+  'water basil': `Basil Watering Guide 💧
+
+**How often:** Every 2-3 days in summer, less in winter
+
+**How to check:** 
+• Stick finger 2cm into soil
+• If dry, water thoroughly
+• If still moist, wait another day
+
+**Signs you're overwatering:**
+• Yellow leaves from bottom
+• Drooping despite wet soil
+• Musty smell from soil
+
+**Signs of underwatering:**
+• Wilting/drooping
+• Dry, crispy leaf edges
+• Soil pulling away from pot edges
+
+**Best practice:**
+☀️ Water in the morning (6-8 AM)
+💧 Water at the base, not on leaves
+🪴 Ensure pot has drainage holes
+🌡️ Water more in hot weather
+
+**Pro tip:** Basil prefers slightly moist but never waterlogged soil. Harvest regularly to keep it bushy! ✂️`,
+
+  'white powder': `White powder on leaves = **Powdery Mildew** 🍄
+
+This is a fungal disease. Very common in India during monsoon and humid conditions.
+
+**Identify it:**
+• White or grey powdery coating on leaf surfaces
+• Leaves may yellow and distort
+• Starts on upper leaf surface
+
+**Organic treatments (use first):**
+1. **Diluted milk spray** — Mix 40% milk with 60% water. Spray every 3 days. Works brilliantly!
+2. **Baking soda solution** — 1 tsp baking soda + 1L water + few drops dish soap. Spray weekly.
+3. **Neem oil** — 5ml neem oil + 1L water. Spray in the evening to avoid burning.
+4. **Remove** all affected leaves immediately.
+
+**Chemical treatment:**
+• Sulfur-based fungicide (available at nurseries)
+• Myclobutanil spray for severe cases
+
+**Prevention:**
+✅ Improve air circulation around plants
+✅ Avoid wetting leaves when watering
+✅ Water in the morning only
+✅ Space plants adequately
+
+Start with the milk spray — it's cheap, effective, and safe! 🌿`,
+
+  'beginner': `Best plants for beginners in India! 🌱
+
+**Start with these — they're nearly impossible to kill:**
+
+🌿 **Herbs (great for cooking!):**
+• Tulsi/Holy Basil — sacred, medicinal, easy
+• Mint (Pudina) — grows in water or soil, shade OK
+• Coriander (Dhaniya) — harvest in 3 weeks!
+
+🍅 **Vegetables:**
+• Cherry Tomato — rewarding, lots of fruit
+• Chilli/Green Chilli — loves Indian climate
+• Spinach (Palak) — fast-growing, nutritious
+
+🪴 **Indoor/Low maintenance:**
+• Aloe Vera — medicinal, nearly indestructible
+• Money Plant — grows in water, loves shade
+• Snake Plant — survives complete neglect
+
+**My top 3 picks for apartment balcony:**
+1. 🌿 Mint — zero effort, always useful
+2. 🌶️ Green Chilli — loves India's climate
+3. 🪴 Aloe Vera — medicinal + beautiful
+
+Get started with a basic potting mix (₹150) and small pots. You'll be harvesting within a month! 🎉`,
+
+  'fertilizer': `Organic Fertilizer Recipes for Home Garden 🌱
+
+**Best organic options:**
+
+🥚 **Eggshell water** (calcium)
+Crush eggshells, soak in water 24hrs, water plants. Great for tomatoes and peppers!
+
+☕ **Coffee grounds** (nitrogen)  
+Mix into soil or top-dress. Excellent for herbs, tomatoes, and leafy greens.
+
+🍌 **Banana peel water** (potassium)
+Soak 3-4 banana peels in 2L water for 48hrs. Excellent for fruiting plants!
+
+♻️ **Vermicompost tea**
+Add 1 cup vermicompost to 5L water, stir, let sit 24hrs. Use as liquid fertilizer weekly.
+
+🪸 **Seaweed fertilizer**
+Mix 10ml liquid seaweed in 1L water. Spray on leaves (foliar feeding).
+
+**Ready-made budget options:**
+• Vermicompost (₹95/kg) — best all-purpose
+• Bone meal (₹110/500g) — for phosphorus
+• Neem cake (₹80/kg) — fertilizer + pest control
+
+**Timing:** Fertilize every 2-3 weeks during growing season. Reduce in winter. Always water before fertilizing! 🌿`,
+
+  'chilli fruit': `Chilli not fruiting? Let's fix that! 🌶️
+
+**Common reasons chilli won't fruit:**
+
+🌡️ **Temperature too extreme:**
+• Below 15°C or above 38°C causes flower drop
+• Ideal: 22-32°C
+• Solution: Move to shade during peak afternoon
+
+💨 **Low pollination:**
+• No wind or insects to pollinate
+• Solution: Gently shake flowers daily or use a soft brush to transfer pollen
+
+💧 **Inconsistent watering:**
+• Wet/dry cycles cause blossom drop
+• Solution: Water when top 2cm of soil is dry
+
+🌱 **Too much nitrogen:**
+• Excess N = lots of leaves, no fruit
+• Solution: Switch to potassium-rich fertilizer (use banana peel water)
+
+🔅 **Insufficient light:**
+• Need 6+ hours direct sunlight
+• Solution: Move to sunniest spot
+
+**Quick fix plan:**
+1. Apply banana peel water fertilizer
+2. Shake plants daily for pollination
+3. Water consistently every alternate day
+4. Ensure 6+ hours of direct sun
+
+Most chilli issues resolve in 2-3 weeks! 🌶️`
+};
+
+function getAIResponse(msg) {
+  msg = msg.toLowerCase();
+  if (msg.includes('yellow') || msg.includes('yellowing')) return AI_KNOWLEDGE['yellow leaves'];
+  if (msg.includes('tomato') && (msg.includes('dying') || msg.includes('problem') || msg.includes('help'))) return AI_KNOWLEDGE['tomato dying'];
+  if (msg.includes('shade') || msg.includes('low light') || msg.includes('indoor')) return AI_KNOWLEDGE['shade'];
+  if (msg.includes('basil') && (msg.includes('water') || msg.includes('often') || msg.includes('how'))) return AI_KNOWLEDGE['water basil'];
+  if (msg.includes('white') && msg.includes('powder')) return AI_KNOWLEDGE['white powder'];
+  if (msg.includes('beginner') || msg.includes('start') || msg.includes('first plant')) return AI_KNOWLEDGE['beginner'];
+  if (msg.includes('fertilizer') || msg.includes('organic') || msg.includes('compost')) return AI_KNOWLEDGE['fertilizer'];
+  if (msg.includes('chilli') && (msg.includes('fruit') || msg.includes('flower') || msg.includes('fruiting'))) return AI_KNOWLEDGE['chilli fruit'];
+  if (msg.includes('water') && (msg.includes('how') || msg.includes('often') || msg.includes('much'))) {
+    return `**Watering Guide 💧**\n\nGeneral rule: Water when the top 2cm of soil feels dry.\n\n**By plant type:**\n• Succulents/Aloe: Once a week\n• Herbs (basil, mint): Every 2-3 days\n• Tomatoes, chilli: Daily in summer, every 2 days in cooler weather\n• Leafy greens: Daily or every other day\n\n**Key tips:**\n✅ Morning watering (6-8 AM) is best\n✅ Water deeply but infrequently for deep root growth\n✅ Less water in monsoon and winter\n\nWhich specific plant are you asking about? I can give more precise advice! 🌱`;
+  }
+  if (msg.includes('disease') || msg.includes('spots') || msg.includes('infected')) {
+    return `**Disease Detection Tips 🔬**\n\nFor accurate diagnosis, try our **Disease Identifier** tool — upload a photo for instant AI diagnosis!\n\n**Common diseases by symptom:**\n\n🔴 **Brown spots** → Early Blight (Tomato)\n⬜ **White powder** → Powdery Mildew\n🌀 **Curling leaves** → Leaf Curl Virus\n🟡 **Yellow from bottom up** → Root Rot (overwatering)\n🕷️ **Tiny white dots** → Spider Mites\n\n**First aid for any disease:**\n1. Remove affected plant parts immediately\n2. Spray with neem oil solution (5ml/1L water)\n3. Improve air circulation\n4. Reduce overhead watering\n\nGo to Disease Identifier for photo-based diagnosis! 🌿`;
+  }
+  return `Thanks for your question! 🌿\n\nI'm Oasis AI, your personal gardening assistant. I can help with:\n\n• Plant disease diagnosis\n• Watering schedules\n• Plant recommendations for your space\n• Pest control (organic methods)\n• Fertilizer advice\n• Harvest timing\n• General plant care\n\nCould you provide more details about:\n• Which plant are you asking about?\n• What symptoms are you seeing?\n• What type of space (balcony/indoor/terrace)?\n\nThe more details you give, the better I can help! 🌱`;
+}
+
+function formatMessage(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+function addMessage(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `chat-message ${role} animate-slide-up`;
+  div.innerHTML = `
+    <div class="chat-avatar ${role==='bot'?'chat-bot-avatar':'chat-user-avatar'}">${role==='bot'?'🤖':'👤'}</div>
+    <div><div class="chat-bubble">${formatMessage(text)}</div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-message bot';
+  div.id = 'typing-indicator';
+  div.innerHTML = `<div class="chat-avatar chat-bot-avatar">🤖</div><div class="chat-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if(t) t.remove();
+}
+
+let chatHistory = Store.get('ai-chat') || [];
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', msg);
+  chatHistory.push({role:'user',text:msg});
+  showTyping();
+  const delay = 800 + Math.random()*800;
+  setTimeout(() => {
+    removeTyping();
+    const reply = getAIResponse(msg);
+    addMessage('bot', reply);
+    chatHistory.push({role:'bot',text:reply});
+    if(chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+    Store.set('ai-chat',chatHistory);
+    updateHistory();
+  }, delay);
+}
+
+function sendExample(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function clearChat() {
+  document.getElementById('chat-messages').innerHTML = '';
+  chatHistory = [];
+  Store.remove('ai-chat');
+  addWelcome();
+  Toast.show('Chat cleared 🗑️', 'success');
+}
+
+function updateHistory() {
+  const userMsgs = chatHistory.filter(m=>m.role==='user').slice(-5);
+  document.getElementById('chat-history').innerHTML = userMsgs.length
+    ? userMsgs.map(m=>`<div style="padding:6px;border-radius:6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="sendMessage('${m.text.replace(/'/g,'')}')">${m.text.substring(0,40)}${m.text.length>40?'...':''}</div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:0.8rem">No previous chats</div>';
+}
+
+function addWelcome() {
+  addMessage('bot', `**Hello! I'm Oasis AI 🌿**
+
+I'm your personal urban gardening expert. I can help you with:
+
+• 🔬 Diagnosing plant diseases
+• 💧 Watering schedules and advice  
+• 🌱 Plant recommendations for your space
+• 🐛 Organic pest control methods
+• 🌾 Harvest timing guidance
+• 💊 Fertilizer and soil advice
+
+**Ask me anything** or try one of the example questions on the right!
+
+What's going on with your garden today? 🌱`);
+}
+
+// Load chat history
+if (chatHistory.length) {
+  chatHistory.forEach(m => addMessage(m.role, m.text));
+  updateHistory();
+} else {
+  addWelcome();
+}
+</script>
+</body>
+</html>

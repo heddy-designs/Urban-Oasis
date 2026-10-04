@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disease Identifier – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .disease-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;margin:0 auto}
+    @media(max-width:768px){.disease-layout{grid-template-columns:1fr}}
+    .upload-zone{border:2px dashed var(--border);border-radius:20px;padding:60px 40px;text-align:center;cursor:pointer;transition:var(--transition);position:relative}
+    .upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:rgba(46,125,50,0.03)}
+    .preview-img{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-top:16px}
+    .confidence-circle{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;border:4px solid;flex-shrink:0}
+    .treatment-section{border-radius:12px;padding:16px;margin-bottom:12px}
+    .symptom-tag{display:inline-block;padding:5px 12px;background:rgba(229,57,53,0.08);color:#e53935;border-radius:50px;font-size:0.78rem;font-weight:600;margin:3px}
+    .cause-tag{display:inline-block;padding:5px 12px;background:rgba(255,152,0,0.1);color:#FF9800;border-radius:50px;font-size:0.78rem;font-weight:600;margin:3px}
+    .prevent-tag{display:inline-block;padding:5px 12px;background:rgba(46,125,50,0.1);color:var(--primary);border-radius:50px;font-size:0.78rem;font-weight:600;margin:3px}
+    .analyzing-overlay{position:absolute;inset:0;background:rgba(255,255,255,0.95);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10}
+    [data-theme="dark"] .analyzing-overlay{background:rgba(26,26,26,0.95)}
+    .scan-ring{width:80px;height:80px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes scanMove{0%,100%{transform:translateY(0)}50%{transform:translateY(200px)}}
+    .known-disease-card{border-radius:12px;padding:14px;border:1px solid var(--border);cursor:pointer;transition:var(--transition)}
+    .known-disease-card:hover{border-color:var(--primary);background:rgba(46,125,50,0.04)}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <div class="disease-layout">
+      <!-- LEFT: Upload -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card" style="position:relative">
+          <h3 style="font-weight:700;margin-bottom:4px">📸 Upload Plant Image</h3>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px">Take a clear photo of the affected leaf or stem for best results</p>
+
+          <div class="upload-zone" id="upload-zone"
+            ondragover="event.preventDefault();this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="handleDrop(event)"
+            onclick="document.getElementById('file-input').click()">
+            <div id="upload-content">
+              <div style="font-size:3.5rem;margin-bottom:12px">📷</div>
+              <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Drop image here or click to upload</div>
+              <div style="font-size:0.85rem;color:var(--text-muted)">Supports JPG, PNG, WebP (max 10MB)</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px">📱 Works great with photos taken with your phone</div>
+            </div>
+            <div id="analyzing-overlay" class="analyzing-overlay" style="display:none">
+              <div class="scan-ring"></div>
+              <div style="font-weight:700;font-size:1rem">Analyzing plant...</div>
+              <div style="font-size:0.85rem;color:var(--text-muted)">AI is examining the image</div>
+              <div id="analyze-steps" style="font-size:0.8rem;color:var(--primary);text-align:center;margin-top:4px"></div>
+            </div>
+          </div>
+          <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFileSelect(event)"/>
+
+          <div id="preview-section" style="display:none;margin-top:16px">
+            <img id="preview-img" class="preview-img" src="" alt="Plant preview"/>
+            <div style="display:flex;gap:10px;margin-top:12px">
+              <button class="btn btn-primary" style="flex:1" onclick="analyzeDisease()">🔬 Analyze Disease</button>
+              <button class="btn btn-ghost" onclick="clearUpload()">🗑️ Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">📸 Photo Tips for Better Results</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:1.1rem">✅</span><span style="font-size:0.85rem">Take photo in natural daylight, not indoor lighting</span></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:1.1rem">✅</span><span style="font-size:0.85rem">Focus on the most affected leaf or area</span></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:1.1rem">✅</span><span style="font-size:0.85rem">Capture both top and underside of leaf if possible</span></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:1.1rem">❌</span><span style="font-size:0.85rem;color:var(--text-muted)">Avoid blurry or dark photos</span></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:1.1rem">❌</span><span style="font-size:0.85rem;color:var(--text-muted)">Don't upload photos of healthy plants expecting diseases</span></div>
+          </div>
+        </div>
+
+        <!-- Known Diseases Quick Reference -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">📋 Common Diseases Database</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="known-disease-card" onclick="showDisease(0)">
+              <div style="font-weight:600;font-size:0.9rem">🍅 Early Blight (Tomato)</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">Brown spots with yellow rings • Fungal</div>
+            </div>
+            <div class="known-disease-card" onclick="showDisease(1)">
+              <div style="font-weight:600;font-size:0.9rem">🌿 Powdery Mildew</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">White powder on leaves • Multiple plants</div>
+            </div>
+            <div class="known-disease-card" onclick="showDisease(2)">
+              <div style="font-weight:600;font-size:0.9rem">🌶️ Leaf Curl Virus</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">Curling leaves, mosaic yellowing • Viral</div>
+            </div>
+            <div class="known-disease-card" onclick="showDisease(3)">
+              <div style="font-weight:600;font-size:0.9rem">🪴 Root Rot</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">Wilting despite wet soil • Overwatering</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div>
+        <div id="placeholder-results" class="card" style="text-align:center;padding:60px 24px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:3.5rem;margin-bottom:16px">🔬</div>
+          <div style="font-size:1.2rem;font-weight:700;margin-bottom:8px">Upload a Plant Image</div>
+          <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;max-width:300px">Take or upload a photo of your plant's affected area to get instant disease diagnosis with treatment recommendations.</p>
+        </div>
+
+        <div id="disease-results" style="display:none;display:flex;flex-direction:column;gap:16px">
+          <!-- Header -->
+          <div class="card" style="background:linear-gradient(135deg,rgba(229,57,53,0.06),rgba(255,152,0,0.04));border:1px solid rgba(229,57,53,0.15)">
+            <div style="display:flex;align-items:flex-start;gap:16px">
+              <div class="confidence-circle" id="res-confidence" style="border-color:var(--primary);color:var(--primary)">88%</div>
+              <div style="flex:1">
+                <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Detected Disease</div>
+                <div style="font-size:1.4rem;font-weight:800;margin:4px 0" id="res-name">Early Blight</div>
+                <div style="font-size:0.88rem;color:var(--text-muted)" id="res-plant">Affects: Tomato, Potato</div>
+                <div style="margin-top:8px" id="res-severity"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Symptoms -->
+          <div class="card">
+            <div style="font-weight:700;margin-bottom:10px">🔴 Symptoms</div>
+            <div id="res-symptoms"></div>
+          </div>
+
+          <!-- Causes -->
+          <div class="card">
+            <div style="font-weight:700;margin-bottom:10px">⚠️ Causes</div>
+            <div id="res-causes"></div>
+          </div>
+
+          <!-- Treatments -->
+          <div class="card">
+            <div style="font-weight:700;margin-bottom:14px">💊 Treatment Options</div>
+            <div class="treatment-section" style="background:rgba(46,125,50,0.06);border:1px solid rgba(46,125,50,0.15)">
+              <div style="font-weight:700;color:var(--primary);margin-bottom:8px">🌿 Organic Treatment</div>
+              <div id="res-organic" style="font-size:0.88rem;line-height:1.7"></div>
+            </div>
+            <div class="treatment-section" style="background:rgba(33,150,243,0.06);border:1px solid rgba(33,150,243,0.15)">
+              <div style="font-weight:700;color:#2196F3;margin-bottom:8px">💊 Chemical Treatment</div>
+              <div id="res-chemical" style="font-size:0.88rem;line-height:1.7"></div>
+            </div>
+          </div>
+
+          <!-- Prevention -->
+          <div class="card">
+            <div style="font-weight:700;margin-bottom:10px">🛡️ Prevention</div>
+            <div id="res-prevention"></div>
+          </div>
+
+          <button class="btn btn-primary w-full" onclick="clearUpload()">🔄 Analyze Another Plant</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('disease-identifier.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Disease Identifier','AI-powered plant disease diagnosis');
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) processFile(file);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('upload-content').style.display = 'none';
+    document.getElementById('preview-section').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function analyzeDisease() {
+  const overlay = document.getElementById('analyzing-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('placeholder-results').style.display = 'none';
+  document.getElementById('disease-results').style.display = 'none';
+
+  const steps = ['Uploading image...','Preprocessing...','Detecting symptoms...','Cross-referencing database...','Generating diagnosis...'];
+  let stepIdx = 0;
+  const stepsEl = document.getElementById('analyze-steps');
+  const stepInterval = setInterval(() => {
+    if (stepIdx < steps.length) { stepsEl.textContent = steps[stepIdx++]; }
+    else clearInterval(stepInterval);
+  }, 500);
+
+  setTimeout(() => {
+    clearInterval(stepInterval);
+    overlay.style.display = 'none';
+    document.getElementById('upload-content').style.display = 'block';
+    const disease = DISEASES_DB[Math.floor(Math.random()*DISEASES_DB.length)];
+    showDiseaseResult(disease);
+    Toast.show('Disease identified! 🔬', 'success');
+  }, 2800);
+}
+
+function showDiseaseResult(d) {
+  document.getElementById('disease-results').style.display = 'flex';
+  document.getElementById('placeholder-results').style.display = 'none';
+  document.getElementById('res-name').textContent = d.name;
+  document.getElementById('res-plant').textContent = 'Affects: ' + d.plant;
+  document.getElementById('res-confidence').textContent = d.confidence + '%';
+  const conf = d.confidence;
+  const color = conf>85?'var(--primary)':conf>70?'#f59e0b':'#e53935';
+  document.getElementById('res-confidence').style.borderColor = color;
+  document.getElementById('res-confidence').style.color = color;
+  document.getElementById('res-severity').innerHTML = `<span class="badge ${conf>85?'badge-red':'badge-yellow'}">${conf>85?'High Confidence':'Medium Confidence'} • ${conf}% match</span>`;
+  document.getElementById('res-symptoms').innerHTML = d.symptoms.map(s=>`<span class="symptom-tag">• ${s}</span>`).join('');
+  document.getElementById('res-causes').innerHTML = d.causes.map(c=>`<span class="cause-tag">⚠️ ${c}</span>`).join('');
+  document.getElementById('res-organic').innerHTML = d.organic.map((t,i)=>`<div style="margin-bottom:6px">${i+1}. ${t}</div>`).join('');
+  document.getElementById('res-chemical').innerHTML = d.chemical.map((t,i)=>`<div style="margin-bottom:6px">${i+1}. ${t}</div>`).join('');
+  document.getElementById('res-prevention').innerHTML = d.prevention.map(p=>`<span class="prevent-tag">✅ ${p}</span>`).join('');
+  document.getElementById('disease-results').scrollIntoView({behavior:'smooth'});
+}
+
+function showDisease(idx) {
+  const d = DISEASES_DB[idx];
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('upload-content').style.display = 'block';
+  showDiseaseResult(d);
+}
+
+function clearUpload() {
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('upload-content').style.display = 'block';
+  document.getElementById('disease-results').style.display = 'none';
+  document.getElementById('placeholder-results').style.display = 'flex';
+  document.getElementById('file-input').value = '';
+}
+</script>
+</body>
+</html>

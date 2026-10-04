@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Learning Center – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .tip-card{border-radius:16px;padding:20px;border:1px solid var(--border);transition:var(--transition);cursor:pointer}
+    .tip-card:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+    .video-card{border-radius:16px;overflow:hidden;cursor:pointer;transition:var(--transition)}
+    .video-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+    .video-thumb{height:160px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative}
+    .play-btn{position:absolute;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+    .faq-item{border-bottom:1px solid var(--border)}
+    .faq-q{display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-weight:600;font-size:0.95rem}
+    .faq-a{max-height:0;overflow:hidden;transition:max-height 0.3s ease;font-size:0.9rem;color:var(--text-muted);line-height:1.8}
+    .faq-item.open .faq-a{max-height:300px;padding-bottom:16px}
+    .guide-step{display:flex;gap:14px;padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:10px}
+    .step-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.9rem}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <!-- Section tabs -->
+    <div class="tabs" style="margin-bottom:24px">
+      <div class="tab active" onclick="showSection('tips',this)">💡 Tips & Guides</div>
+      <div class="tab" onclick="showSection('videos',this)">🎥 Video Lessons</div>
+      <div class="tab" onclick="showSection('beginner',this)">🌱 Beginner Guide</div>
+      <div class="tab" onclick="showSection('faq',this)">❓ FAQ</div>
+    </div>
+
+    <!-- Tips Section -->
+    <div id="section-tips">
+      <div class="grid-3" style="gap:16px" id="tips-grid"></div>
+    </div>
+
+    <!-- Videos Section -->
+    <div id="section-videos" style="display:none">
+      <div class="grid-3" style="gap:16px" id="videos-grid"></div>
+    </div>
+
+    <!-- Beginner Guide -->
+    <div id="section-beginner" style="display:none;max-width:800px;margin:0 auto">
+      <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(46,125,50,0.06),rgba(102,187,106,0.04))">
+        <div style="text-align:center;padding:12px 0">
+          <div style="font-size:3rem;margin-bottom:8px">🌱</div>
+          <h2 style="font-size:1.5rem;font-weight:800">Complete Beginner's Guide</h2>
+          <p style="color:var(--text-muted)">From zero to your first harvest in 30 days</p>
+        </div>
+      </div>
+      <div id="beginner-steps"></div>
+    </div>
+
+    <!-- FAQ -->
+    <div id="section-faq" style="display:none;max-width:760px;margin:0 auto">
+      <div id="faq-items"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Tip Detail Modal -->
+<div class="modal-overlay" id="tip-modal">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="tip-modal-title"></div>
+        <div id="tip-modal-meta" style="font-size:0.82rem;color:var(--text-muted);margin-top:2px"></div>
+      </div>
+      <div class="modal-close" onclick="closeModal('tip-modal')">✕</div>
+    </div>
+    <div id="tip-modal-content" style="font-size:0.93rem;line-height:1.8;color:var(--text-muted)"></div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('learning.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Learning Center','Guides, videos, and tips for urban gardeners');
+
+const TIPS_DETAILED = [
+  {id:1,title:'Watering 101 for Beginners',category:'Beginner',readTime:'5 min',icon:'💧',color:'rgba(33,150,243,0.1)',
+   content:`<h3 style="margin-bottom:12px">The Golden Rule of Watering</h3>
+   <p>The most common mistake new gardeners make is overwatering. More plants die from too much water than too little!</p>
+   <h4 style="margin:16px 0 8px">How to test soil moisture:</h4>
+   <ul style="padding-left:20px;margin-bottom:12px"><li>Push your finger 2cm into the soil</li><li>If it feels dry, water thoroughly</li><li>If it feels moist, wait another day</li></ul>
+   <h4 style="margin:16px 0 8px">Signs of overwatering:</h4>
+   <ul style="padding-left:20px;margin-bottom:12px"><li>Yellow leaves from the bottom</li><li>Soft, mushy stems</li><li>Foul smell from soil</li><li>Algae growing on soil</li></ul>
+   <h4 style="margin:16px 0 8px">Signs of underwatering:</h4>
+   <ul style="padding-left:20px;margin-bottom:12px"><li>Wilting and drooping</li><li>Dry, crispy leaf edges</li><li>Soil pulling away from pot</li></ul>
+   <p><strong>Pro tip:</strong> Morning watering (6-8 AM) is always best. The water reaches roots before evaporating, and leaves dry out before evening, preventing fungal growth.</p>`},
+  {id:2,title:'Best Plants for Apartment Balconies',category:'Beginner',readTime:'8 min',icon:'🌱',color:'rgba(46,125,50,0.1)',
+   content:`<h3 style="margin-bottom:12px">Top 10 Balcony Plants in India</h3>
+   <ol style="padding-left:20px;line-height:2.5">
+     <li><strong>🍅 Cherry Tomato</strong> — High yield, beginner-friendly, 65-day harvest</li>
+     <li><strong>🌶️ Chilli Pepper</strong> — Loves Indian heat, very productive</li>
+     <li><strong>🌿 Tulsi/Holy Basil</strong> — Sacred, medicinal, grows easily</li>
+     <li><strong>🌱 Mint</strong> — Spreads fast, needs its own pot</li>
+     <li><strong>🌾 Coriander</strong> — Ready in 3 weeks, resow regularly</li>
+     <li><strong>🥬 Spinach</strong> — Nutritious, perfect for winter growing</li>
+     <li><strong>🌸 Marigold</strong> — Beautiful + repels pests naturally</li>
+     <li><strong>🧅 Spring Onion</strong> — Ready in 30 days, grows in water</li>
+     <li><strong>🫛 Fenugreek (Methi)</strong> — Fast-growing, healthy</li>
+     <li><strong>🪴 Aloe Vera</strong> — Medicinal, almost zero maintenance</li>
+   </ol>
+   <p><strong>Tip:</strong> Start with just 3-4 plants. Master their care before expanding!</p>`},
+  {id:3,title:'Organic Pest Control',category:'Intermediate',readTime:'10 min',icon:'🐛',color:'rgba(139,195,74,0.1)',
+   content:`<h3 style="margin-bottom:12px">Natural Pest Control Methods</h3>
+   <h4 style="margin:12px 0 8px">🌿 Neem Oil Spray (most effective)</h4>
+   <p>Mix 5ml neem oil + 1 drop dish soap + 1L water. Spray in the evening. Works against 200+ pest species.</p>
+   <h4 style="margin:12px 0 8px">🧄 Garlic Spray</h4>
+   <p>Blend 10 garlic cloves with 2 cups water. Strain and dilute 1:10. Spray on plants. Repels aphids, whiteflies.</p>
+   <h4 style="margin:12px 0 8px">🍋 Citrus Peel Spray</h4>
+   <p>Boil citrus peels in water for 15 minutes. Cool, strain, spray. Repels ants and aphids.</p>
+   <h4 style="margin:12px 0 8px">🌼 Companion Planting</h4>
+   <p>Plant marigolds next to tomatoes and peppers — they naturally repel pests and attract pollinators!</p>`},
+  {id:4,title:'Composting at Home',category:'Intermediate',readTime:'12 min',icon:'♻️',color:'rgba(255,152,0,0.1)',
+   content:`<h3 style="margin-bottom:12px">Make Your Own Compost</h3>
+   <p>Composting turns kitchen waste into rich plant food — completely free!</p>
+   <h4 style="margin:12px 0 8px">What to add (greens):</h4>
+   <ul style="padding-left:20px;margin-bottom:10px"><li>Vegetable peels</li><li>Fruit scraps</li><li>Coffee grounds, tea bags</li><li>Eggshells</li></ul>
+   <h4 style="margin:12px 0 8px">What NOT to add:</h4>
+   <ul style="padding-left:20px;margin-bottom:10px"><li>Meat or fish</li><li>Oily food</li><li>Dairy products</li></ul>
+   <h4 style="margin:12px 0 8px">Simple 2-container method:</h4>
+   <ol style="padding-left:20px;line-height:2"><li>Get 2 small containers with lids</li><li>Layer food scraps with soil/dry leaves</li><li>Keep moist (not wet)</li><li>Switch containers after 4 weeks</li><li>Use as fertilizer after 8-10 weeks</li></ol>`},
+  {id:5,title:'Maximizing Vertical Space',category:'Advanced',readTime:'7 min',icon:'📐',color:'rgba(156,39,176,0.1)',
+   content:`<h3 style="margin-bottom:12px">Vertical Garden Techniques</h3>
+   <h4 style="margin:12px 0 8px">🪜 Tiered Rack System</h4>
+   <p>A 3-tier rack can hold 15-20 pots in just 2 sq ft of floor space. Perfect for herbs and small vegetables.</p>
+   <h4 style="margin:12px 0 8px">🧱 Wall Pockets/Planters</h4>
+   <p>Fabric wall pockets can be attached to any wall or railing. Plant herbs in each pocket for a living wall.</p>
+   <h4 style="margin:12px 0 8px">🪝 Railing Planters</h4>
+   <p>Hook-on planters that attach to balcony railings. Perfect for trailing plants like mint and strawberries.</p>
+   <h4 style="margin:12px 0 8px">🌿 Trellises for Climbers</h4>
+   <p>Train beans, cucumbers, and passion fruit up a trellis to grow vertically and save floor space.</p>`},
+  {id:6,title:'Seasonal Gardening Calendar',category:'Beginner',readTime:'6 min',icon:'📅',color:'rgba(233,30,99,0.1)',
+   content:`<h3 style="margin-bottom:12px">What to Plant Each Month (India)</h3>
+   <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+     <tr style="background:rgba(46,125,50,0.08)"><th style="padding:8px;text-align:left">Month</th><th style="padding:8px">Plant</th><th style="padding:8px">Notes</th></tr>
+     <tr><td style="padding:8px">Jan-Feb</td><td style="padding:8px">Tomato, Cabbage, Cauliflower</td><td style="padding:8px;color:var(--text-muted)">Cool season</td></tr>
+     <tr style="background:rgba(46,125,50,0.04)"><td style="padding:8px">Mar-Apr</td><td style="padding:8px">Chilli, Brinjal, Gourds</td><td style="padding:8px;color:var(--text-muted)">Start summer crops</td></tr>
+     <tr><td style="padding:8px">May-Jun</td><td style="padding:8px">Herbs, Tomato (second batch)</td><td style="padding:8px;color:var(--text-muted)">Before monsoon</td></tr>
+     <tr style="background:rgba(46,125,50,0.04)"><td style="padding:8px">Jul-Sep</td><td style="padding:8px">Methi, Spinach, Coriander</td><td style="padding:8px;color:var(--text-muted)">Monsoon season</td></tr>
+     <tr><td style="padding:8px">Oct-Dec</td><td style="padding:8px">Tomato, Peas, Leafy greens</td><td style="padding:8px;color:var(--text-muted)">Best growing season</td></tr>
+   </table>`},
+];
+
+const VIDEOS = [
+  {id:1,title:'Setting Up Your First Balcony Garden',duration:'8:45',icon:'🌱',color:'#2E7D32',views:'15.2K',level:'Beginner'},
+  {id:2,title:'How to Diagnose Plant Diseases',duration:'12:30',icon:'🔬',color:'#e53935',views:'8.7K',level:'Intermediate'},
+  {id:3,title:'Organic Composting in Small Spaces',duration:'10:15',icon:'♻️',color:'#FF9800',views:'11.3K',level:'Beginner'},
+  {id:4,title:'Vertical Garden Setup Tutorial',duration:'15:20',icon:'📐',color:'#9C27B0',views:'6.4K',level:'Intermediate'},
+  {id:5,title:'Watering Techniques for Container Plants',duration:'7:55',icon:'💧',color:'#2196F3',views:'9.8K',level:'Beginner'},
+  {id:6,title:'Harvesting and Seed Saving Guide',duration:'11:10',icon:'🌾',color:'#4CAF50',views:'5.2K',level:'Advanced'},
+];
+
+const BEGINNER_STEPS = [
+  {num:1,title:'Choose Your Space',icon:'🏠',desc:'Assess your balcony or window — measure the area, note how many hours of sunlight it gets, and check if there\'s good air circulation.'},
+  {num:2,title:'Get Basic Supplies',icon:'🛍️',desc:'Start minimal: 2-3 pots (6-8 inch), good potting mix (₹150/bag), and seeds of easy plants (tomato, chilli, herbs). Total budget: ₹500-800.'},
+  {num:3,title:'Choose Beginner Plants',icon:'🌱',desc:'Start with: Cherry Tomato, Green Chilli, and Mint. These three are the most forgiving and rewarding for first-time gardeners.'},
+  {num:4,title:'Plant Your Seeds',icon:'🫘',desc:'Fill pots with moist potting mix, plant 2-3 seeds per pot at 1cm depth. Cover lightly with soil and keep moist. Seeds germinate in 7-14 days.'},
+  {num:5,title:'Water Wisely',icon:'💧',desc:'Water when the top 2cm of soil feels dry. Morning watering is best. Avoid getting water on leaves. Ensure pots have drainage holes.'},
+  {num:6,title:'Fertilize Monthly',icon:'🌿',desc:'After the first month, apply liquid fertilizer every 2-3 weeks. Vermicompost tea is excellent — just add 1 cup vermicompost to 5L water.'},
+  {num:7,title:'Watch for Problems',icon:'🔍',desc:'Check plants daily. Look for yellowing, spots, insects, or wilting. Early detection saves plants. Use our Disease Identifier for quick diagnosis.'},
+  {num:8,title:'Harvest!',icon:'🎉',desc:'Most herbs can be harvested in 3-4 weeks. Tomatoes in 65 days. Chilli in 80 days. Regular harvesting encourages more growth!'},
+];
+
+const FAQS = [
+  {q:'Why are my plant leaves turning yellow?',a:'Yellow leaves are most commonly caused by overwatering (70% of cases), followed by nutrient deficiency, low light, or pest damage. Test the soil — if wet, reduce watering. If dry, water and apply balanced fertilizer.'},
+  {q:'How much sunlight do balcony plants need?',a:'Most vegetables need 6+ hours of direct sunlight. Herbs like basil and coriander need 4-6 hours. Shade-tolerant plants like mint, spinach, and money plant can thrive with 2-4 hours.'},
+  {q:'What is the best potting mix for container gardening?',a:'An ideal mix: 40% garden soil + 30% vermicompost + 20% coco peat + 10% sand. This provides nutrients, drainage, and moisture retention. Ready-made potting mixes from nurseries are also good.'},
+  {q:'How do I prevent root rot?',a:'Root rot is caused by overwatering and poor drainage. Always use pots with drainage holes, avoid letting pots sit in water trays, use well-draining soil, and water only when the top soil is dry.'},
+  {q:'When should I repot my plants?',a:'Repot when: roots are coming out of drainage holes, plant looks stunted despite feeding, soil dries out very quickly after watering, or roots are visibly circling the pot. Best time: spring (March-April).'},
+  {q:'Can I grow vegetables without direct sunlight?',a:'Yes! Leafy greens (spinach, lettuce, methi), coriander, and herbs like mint can grow in 3-4 hours of indirect sunlight. Use grow lights if your space is very dark.'},
+  {q:'How do I make organic fertilizer at home?',a:'Simple options: 1) Banana peel water (soak peels for 48hrs), 2) Eggshell water (crush and soak for 24hrs), 3) Vermicompost tea (1 cup compost in 5L water), 4) Coffee grounds mixed into soil.'},
+  {q:'What pests are common in Indian apartment gardens?',a:'Common pests: Aphids (tiny green/black insects), Whiteflies, Spider mites, Mealybugs, and Caterpillars. Natural remedy: Neem oil spray (5ml neem oil + 1L water + drop of dish soap). Spray in the evening.'},
+];
+
+function renderTips() {
+  document.getElementById('tips-grid').innerHTML = TIPS_DETAILED.map((t,i)=>`
+    <div class="tip-card animate-on-scroll" style="animation-delay:${i*0.07}s" onclick="showTip(${t.id})">
+      <div style="width:52px;height:52px;border-radius:14px;background:${t.color};display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:14px">${t.icon}</div>
+      <div style="font-weight:700;margin-bottom:6px">${t.title}</div>
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;line-height:1.6">${LEARNING_TIPS.find(l=>l.id===t.id)?.desc||''}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="badge ${t.category==='Beginner'?'badge-green':t.category==='Intermediate'?'badge-yellow':'badge-red'}">${t.category}</span>
+        <span style="font-size:0.78rem;color:var(--text-muted)">📖 ${t.readTime} read</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderVideos() {
+  document.getElementById('videos-grid').innerHTML = VIDEOS.map((v,i)=>`
+    <div class="card video-card animate-on-scroll" style="animation-delay:${i*0.07}s;padding:0" onclick="playVideo(${v.id})">
+      <div class="video-thumb" style="background:linear-gradient(135deg,${v.color}20,${v.color}08)">
+        <span style="font-size:5rem">${v.icon}</span>
+        <div class="play-btn">▶</div>
+      </div>
+      <div style="padding:14px">
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px">${v.title}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:0.78rem;color:var(--text-muted)">⏱ ${v.duration} • 👁 ${v.views}</div>
+          <span class="badge ${v.level==='Beginner'?'badge-green':v.level==='Intermediate'?'badge-yellow':'badge-red'}">${v.level}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderBeginner() {
+  document.getElementById('beginner-steps').innerHTML = BEGINNER_STEPS.map(s=>`
+    <div class="guide-step animate-on-scroll">
+      <div class="step-num">${s.num}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;margin-bottom:4px">${s.icon} ${s.title}</div>
+        <div style="font-size:0.88rem;color:var(--text-muted);line-height:1.7">${s.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderFAQ() {
+  document.getElementById('faq-items').innerHTML = FAQS.map((f,i)=>`
+    <div class="faq-item" id="faq-${i}">
+      <div class="faq-q" onclick="toggleFaqItem(${i})">${f.q}<span id="faq-arrow-${i}">▾</span></div>
+      <div class="faq-a" id="faq-a-${i}">${f.a}</div>
+    </div>`).join('');
+}
+
+function toggleFaqItem(i) {
+  const item = document.getElementById(`faq-${i}`);
+  const open = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f=>{f.classList.remove('open');});
+  if (!open) item.classList.add('open');
+}
+
+function showTip(id) {
+  const t = TIPS_DETAILED.find(t=>t.id===id);
+  if(!t) return;
+  document.getElementById('tip-modal-title').textContent = t.title;
+  document.getElementById('tip-modal-meta').textContent = `${t.category} • ${t.readTime} read`;
+  document.getElementById('tip-modal-content').innerHTML = t.content;
+  openModal('tip-modal');
+}
+
+function playVideo(id) {
+  const v = VIDEOS.find(v=>v.id===id);
+  Toast.show(`Playing: ${v.title} 🎥`, 'info');
+}
+
+function showSection(sec, el) {
+  ['tips','videos','beginner','faq'].forEach(s=>document.getElementById('section-'+s).style.display='none');
+  document.getElementById('section-'+sec).style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+renderTips(); renderVideos(); renderBeginner(); renderFAQ();
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Community – Urban Oasis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <style>
+    .dash-layout{display:flex;min-height:100vh}
+    @media(max-width:1024px){.main-content{margin-left:0!important}}
+    .community-layout{display:grid;grid-template-columns:1fr 300px;gap:20px}
+    @media(max-width:900px){.community-layout{grid-template-columns:1fr}}
+    .post-card{border-radius:18px;overflow:hidden;transition:var(--transition)}
+    .post-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+    .post-emoji-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:6rem;background:linear-gradient(135deg,rgba(46,125,50,0.08),rgba(102,187,106,0.04))}
+    .post-actions{display:flex;align-items:center;gap:16px}
+    .action-btn{display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer;color:var(--text-muted);transition:var(--transition);background:none;padding:6px 10px;border-radius:8px}
+    .action-btn:hover{color:var(--primary);background:rgba(46,125,50,0.08)}
+    .action-btn.liked{color:#e53935}
+    .tag-chip{display:inline-block;padding:3px 10px;background:rgba(46,125,50,0.1);color:var(--primary);border-radius:50px;font-size:0.72rem;font-weight:600;margin:2px}
+    .trending-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;transition:var(--transition)}
+    .trending-item:hover{background:rgba(46,125,50,0.06)}
+    .comment-input{display:flex;gap:8px;align-items:center;padding:12px 0;border-top:1px solid var(--border);margin-top:10px}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <div id="sidebar-container"></div>
+  <main class="main-content">
+    <div id="top-bar-container"></div>
+
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+      <div class="tabs" style="padding:4px">
+        <div class="tab active" data-tab="gallery" onclick="switchFeed('gallery',this)">🖼️ Gallery</div>
+        <div class="tab" data-tab="stories" onclick="switchFeed('stories',this)">🏆 Success Stories</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="openModal('share-modal')">📸 Share Your Garden</button>
+      </div>
+    </div>
+
+    <div class="community-layout">
+      <!-- Posts Feed -->
+      <div>
+        <div id="posts-grid" class="grid-2" style="gap:20px"></div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Stats -->
+        <div class="card" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff">
+          <div style="font-weight:700;margin-bottom:16px">🌿 Community Stats</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:800">12.4K</div><div style="font-size:0.75rem;opacity:0.85">Gardeners</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:800">3.2K</div><div style="font-size:0.75rem;opacity:0.85">Posts</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:800">45K</div><div style="font-size:0.75rem;opacity:0.85">Photos</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:800">98%</div><div style="font-size:0.75rem;opacity:0.85">Satisfaction</div></div>
+          </div>
+        </div>
+
+        <!-- Trending Tags -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:12px">🔥 Trending Tags</div>
+          <div>
+            <span class="tag-chip" style="cursor:pointer">#balconygarden</span>
+            <span class="tag-chip" style="cursor:pointer">#tomatoharvest</span>
+            <span class="tag-chip" style="cursor:pointer">#urbangardening</span>
+            <span class="tag-chip" style="cursor:pointer">#organicfood</span>
+            <span class="tag-chip" style="cursor:pointer">#herbgarden</span>
+            <span class="tag-chip" style="cursor:pointer">#chillipepper</span>
+            <span class="tag-chip" style="cursor:pointer">#microgreens</span>
+            <span class="tag-chip" style="cursor:pointer">#indoorgarden</span>
+          </div>
+        </div>
+
+        <!-- Top Gardeners -->
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:14px">🏆 Top Gardeners</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div class="trending-item">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0">P</div>
+              <div style="flex:1"><div style="font-weight:600;font-size:0.88rem">Priya Sharma</div><div style="font-size:0.75rem;color:var(--text-muted)">32 posts • Bangalore</div></div>
+              <span style="font-size:1rem">🥇</span>
+            </div>
+            <div class="trending-item">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2196F3,#64B5F6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0">R</div>
+              <div style="flex:1"><div style="font-weight:600;font-size:0.88rem">Rahul Verma</div><div style="font-size:0.75rem;color:var(--text-muted)">28 posts • Mumbai</div></div>
+              <span style="font-size:1rem">🥈</span>
+            </div>
+            <div class="trending-item">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#9C27B0,#CE93D8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0">A</div>
+              <div style="flex:1"><div style="font-weight:600;font-size:0.88rem">Anjali Nair</div><div style="font-size:0.75rem;color:var(--text-muted)">24 posts • Hyderabad</div></div>
+              <span style="font-size:1rem">🥉</span>
+            </div>
+            <div class="trending-item">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FF9800,#FFB74D);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0">K</div>
+              <div style="flex:1"><div style="font-weight:600;font-size:0.88rem">Karthik M</div><div style="font-size:0.75rem;color:var(--text-muted)">21 posts • Chennai</div></div>
+              <span style="font-size:0.8rem;color:var(--text-muted)">#4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-header">
+      <div class="modal-title">📸 Share Your Garden</div>
+      <div class="modal-close" onclick="closeModal('share-modal')">✕</div>
+    </div>
+    <div class="upload-zone" style="padding:30px;margin-bottom:16px" onclick="document.getElementById('share-file').click()">
+      <div style="font-size:2.5rem;margin-bottom:8px">📷</div>
+      <div style="font-weight:600">Click to upload photo</div>
+      <div style="font-size:0.82rem;color:var(--text-muted)">JPG, PNG (max 10MB)</div>
+    </div>
+    <input type="file" id="share-file" accept="image/*" style="display:none" onchange="previewShare(event)"/>
+    <div id="share-preview" style="display:none;margin-bottom:12px"><img id="share-img" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px" src="" alt=""/></div>
+    <div class="form-group"><label class="form-label">Title</label><input type="text" id="share-title" class="form-input" placeholder="e.g. My balcony tomato harvest!"/></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea id="share-desc" class="form-textarea" style="min-height:80px" placeholder="Tell us about your garden..."></textarea></div>
+    <div class="form-group"><label class="form-label">Tags (comma separated)</label><input type="text" id="share-tags" class="form-input" placeholder="tomato, balcony, harvest"/></div>
+    <button class="btn btn-primary w-full" onclick="submitPost()">🚀 Share with Community</button>
+  </div>
+</div>
+
+<!-- Post Detail Modal -->
+<div class="modal-overlay" id="post-modal">
+  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <div id="pm-author" style="display:flex;align-items:center;gap:10px"></div>
+      <div class="modal-close" onclick="closeModal('post-modal')">✕</div>
+    </div>
+    <div id="pm-image" style="text-align:center;font-size:7rem;padding:24px;background:rgba(46,125,50,0.05);border-radius:12px;margin-bottom:16px"></div>
+    <h3 id="pm-title" style="font-weight:700;margin-bottom:8px"></h3>
+    <p id="pm-desc" style="color:var(--text-muted);line-height:1.8;margin-bottom:16px"></p>
+    <div id="pm-tags" style="margin-bottom:16px"></div>
+    <div id="pm-comments" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
+    <div class="comment-input">
+      <input type="text" id="pm-comment-input" class="form-input" placeholder="Add a comment..." style="flex:1"/>
+      <button class="btn btn-primary btn-sm" onclick="addComment()">Post</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="../js/app.js"></script>
+<script src="../js/dashboard-data.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+document.getElementById('sidebar-container').innerHTML = getSidebarHTML('community.html');
+document.getElementById('top-bar-container').innerHTML = getTopBar('Community','Share and learn from fellow urban gardeners');
+
+let posts = Store.get('community-posts') || JSON.parse(JSON.stringify(COMMUNITY_POSTS));
+let currentPostId = null;
+
+function renderPosts(data) {
+  document.getElementById('posts-grid').innerHTML = data.map((p,i) => `
+    <div class="card post-card animate-on-scroll" style="animation-delay:${i*0.08}s;padding:0;overflow:hidden">
+      <div class="post-emoji-img" style="cursor:pointer" onclick="openPost(${p.id})">${p.image}</div>
+      <div style="padding:18px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem">${p.avatar}</div>
+          <div style="flex:1"><div style="font-weight:600;font-size:0.88rem">${p.user}</div><div style="font-size:0.75rem;color:var(--text-muted)">📍 ${p.city} • ${p.time}</div></div>
+        </div>
+        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;cursor:pointer" onclick="openPost(${p.id})">${p.title}</div>
+        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:12px">${p.desc.substring(0,100)}...</p>
+        <div style="margin-bottom:12px">${p.tags.map(t=>`<span class="tag-chip">#${t}</span>`).join('')}</div>
+        <div class="post-actions">
+          <button class="action-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},event)">
+            ${p.liked?'❤️':'🤍'} <span id="likes-${p.id}">${p.likes}</span>
+          </button>
+          <button class="action-btn" onclick="openPost(${p.id})">
+            💬 <span>${(p.comments_list||[]).length || p.comments}</span>
+          </button>
+          <button class="action-btn" onclick="sharePost(${p.id})">↗️ Share</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function likePost(id, e) {
+  const p = posts.find(p=>p.id===id);
+  if(p){ p.liked=!p.liked; p.likes+=p.liked?1:-1; Store.set('community-posts',posts); renderPosts(posts); }
+}
+
+function openPost(id) {
+  const p = posts.find(p=>p.id===id);
+  if(!p) return;
+  currentPostId = id;
+  document.getElementById('pm-author').innerHTML = `
+    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">${p.avatar}</div>
+    <div><div style="font-weight:700">${p.user}</div><div style="font-size:0.78rem;color:var(--text-muted)">📍 ${p.city} • ${p.time}</div></div>`;
+  document.getElementById('pm-image').textContent = p.image;
+  document.getElementById('pm-title').textContent = p.title;
+  document.getElementById('pm-desc').textContent = p.desc;
+  document.getElementById('pm-tags').innerHTML = p.tags.map(t=>`<span class="tag-chip">#${t}</span>`).join('');
+  renderComments(p);
+  openModal('post-modal');
+}
+
+function renderComments(p) {
+  const comments = p.comments_list || [
+    {user:'GardenFan',text:'Amazing! What variety of tomato is this?', time:'1h ago'},
+    {user:'GreenThumb','text':'Your plants look so healthy! What fertilizer do you use?', time:'30m ago'},
+  ];
+  document.getElementById('pm-comments').innerHTML = comments.map(c=>`
+    <div style="display:flex;gap:10px;padding:10px;background:rgba(46,125,50,0.04);border-radius:10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;color:#fff">${c.user.charAt(0)}</div>
+      <div><div style="font-weight:600;font-size:0.82rem">${c.user}</div><div style="font-size:0.85rem;color:var(--text-muted)">${c.text}</div><div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">${c.time}</div></div>
+    </div>`).join('');
+}
+
+function addComment() {
+  const input = document.getElementById('pm-comment-input');
+  const text = input.value.trim();
+  if(!text) return;
+  const p = posts.find(p=>p.id===currentPostId);
+  if(p){ if(!p.comments_list) p.comments_list=[]; p.comments_list.push({user:'You',text,time:'Just now'}); renderComments(p); Store.set('community-posts',posts); }
+  input.value = '';
+  Toast.show('Comment posted! 💬', 'success');
+}
+
+function sharePost(id) { Toast.show('Share link copied! 🔗', 'success'); }
+
+function switchFeed(type, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(type==='stories'){
+    const stories = posts.filter((p,i)=>i%2===0);
+    renderPosts(stories);
+  } else {
+    renderPosts(posts);
+  }
+}
+
+function previewShare(e) {
+  const file=e.target.files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=ev=>{document.getElementById('share-img').src=ev.target.result;document.getElementById('share-preview').style.display='block'};
+    reader.readAsDataURL(file);
+  }
+}
+
+function submitPost() {
+  const title=document.getElementById('share-title').value.trim();
+  const desc=document.getElementById('share-desc').value.trim();
+  if(!title||!desc){Toast.show('Please fill title and description','warning');return;}
+  const user=Auth.getUser()||{name:'You'};
+  const newPost={id:Date.now(),user:user.name||'You',avatar:(user.name||'Y').charAt(0),city:'Your City',image:'🌿',title,desc,likes:0,comments:0,comments_list:[],time:'Just now',tags:document.getElementById('share-tags').value.split(',').map(t=>t.trim()).filter(Boolean)};
+  posts.unshift(newPost);
+  Store.set('community-posts',posts);
+  closeModal('share-modal');
+  renderPosts(posts);
+  Toast.show('Post shared with the community! 🎉','success');
+}
+
+renderPosts(posts);
+</script>
+</body>
+</html>
